@@ -15,17 +15,19 @@ indent_mode=2
 [project]
 name=CamelBot
 base_path=./
+description=
 
 [long line marker]
 long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=0;Perl;0;EUTF-8;1;1;0;%2Fhome%2Fcasplantje%2Fsrc%2Fcamelbot%2Fcore%2Fpluginmanager.pm;0;4
-FILE_NAME_1=0;Perl;0;EUTF-8;1;1;0;%2Fhome%2Fcasplantje%2Fsrc%2Fcamelbot%2Fcore%2Fcore.pm;0;4
-FILE_NAME_2=0;Perl;0;EUTF-8;1;1;0;%2Fhome%2Fcasplantje%2Fsrc%2Fcamelbot%2Fconnection%2Firc.pm;0;4
-FILE_NAME_3=0;Perl;0;EUTF-8;1;1;0;%2Fhome%2Fcasplantje%2Fsrc%2Fcamelbot%2Fcamelbot.pl;0;4
+current_page=4
+FILE_NAME_0=106;Perl;0;EUTF-8;1;1;0;%2E%2Fsrc%2Fcamelbot%2Fcore%2Fpluginmanager.pm;0;4
+FILE_NAME_1=214;Perl;0;EUTF-8;1;1;0;%2E%2Fsrc%2Fsrc%2Fcamelbot%2Fcore%2Fcore.pm;0;4
+FILE_NAME_2=26;Perl;0;EUTF-8;1;1;0;%2E%2Fsrc%2Fsrc%2Fcamelbot%2Fconnection%2Firc.pm;0;4
+FILE_NAME_3=0;Perl;0;EUTF-8;1;1;0;%2E%2Fsrc%2Fsrc%2Fcamelbot%2Fcamelbot.pl;0;4
+FILE_NAME_4=86;Perl;0;EUTF-8;1;1;0;%2E%2Fsrc%2Fsrc%2Fcamelbot%2Fplugins%2Ftestplugin.pm;0;4
 
 [VTE]
-last_dir=./
+last_dir=/home/casplantje/src/camelbot
