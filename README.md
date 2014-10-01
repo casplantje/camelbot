@@ -14,6 +14,8 @@ Requirements:
 * There's an internal group management for extending privilege management
   * There are builtin commands for the group management
   * Only the group "poweruser" is able to manage users and groups
+  * a list of all users with groups(internal and external) can be 
+retrieved by plugins
 * a list of regular expressions is managed to trigger plugin functions
   * Plugin functions triggered by a regex get a readily parsed message pushed to them
     * This message contains:
