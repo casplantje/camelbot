@@ -12,6 +12,8 @@ use core::pluginmanager;
 sub new
 {
 	print "hello world!\n";
+	connection::irc::connect();
+	connection::irc::readText();
 	return 1;
 }
 
