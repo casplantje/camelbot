@@ -2,6 +2,10 @@ package connection::irc;
 
 use strict;
 use IO::Socket;
+ use threads ('yield',
+'stack_size' => 64*4096,
+'exit' => 'threads_only',
+'stringify');
 
 my $server = "irc.twitch.tv";
 my $port = 6667;
@@ -11,6 +15,8 @@ my $channel = "#casplantje";
 
 my $sock;
 my $listenEvent;
+
+my $receiveThread;
                                     
 print "loaded irc module!\n";
 
@@ -40,6 +46,8 @@ sub connect()
 	
 	print $sock "JOIN $channel\r\n";
 	print "connected!\n";
+	
+	$receiveThread = threads->create(\&readText);
 }
 
 sub readText()

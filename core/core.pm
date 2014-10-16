@@ -13,7 +13,10 @@ sub new
 {
 	print "hello world!\n";
 	connection::irc::connect();
-	connection::irc::readText();
+	#connection::irc::readText();
+	while (1){
+		sleep(2);
+		print "test \n";};
 	return 1;
 }
 
