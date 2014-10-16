@@ -23,5 +23,6 @@ retrieved by plugins
       * username
       * a list of all user privileges and internally managed groups it belongs to
       * an array which will contain any text parsed by the regex
+    * The triggers can have a cooldown time
 * Plugins can add new interfaces that can be used by other plugins
 * All settings are saved in xml format
