@@ -17,7 +17,7 @@ my $login = "oauth:n40n3ly8rrnkapa3ofysx9kpd21yk0";
 my $channel = "#casplantje";
 open (my $debug, ">", "/dev/null")
 	or die "Cannot open debug sink!\n";
-my $loopTimeOut = 1000;
+my $loopTimeOut = 1000; # Todo: find a proper loop timeout that fits irc response times
 # my $debug = *STDOUT;
 
 # Multithreaded communication stuff
