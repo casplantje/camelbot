@@ -15,8 +15,9 @@ sub new
 	connection::irc::connect();
 	#connection::irc::readText();
 	while (1){
-		sleep(2);
-		print "test \n";};
+		my $input =  readline(*STDIN);
+		connection::irc::sendText($input);
+		};
 	return 1;
 }
 
