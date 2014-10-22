@@ -1,0 +1,4 @@
+:casplantje!casplantje@casplantje.tmi.twitch.tv PRIVMSG #casplantje :zeker wel
+:casplantje!casplantje@casplantje.tmi.twitch.tv JOIN #casplantje
+:jtv MODE #casplantje +o casplantje
+:jtv MODE #casplantje +o botface

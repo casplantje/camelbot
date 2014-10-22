@@ -16,6 +16,10 @@ sub new
 	#connection::irc::readText();
 	while (1){
 		my $input =  readline(*STDIN);
+		if ($input =~ "PING")
+		{
+			connection::irc::sendCommand("PING");
+		}
 		connection::irc::sendText($input);
 		};
 	return 1;
