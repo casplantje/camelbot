@@ -1,8 +1,11 @@
 package connection::irc;
 
 use strict;
+use Switch;
 use IO::Socket;
 use IO::Select;
+use connection::credentials;
+
  use threads ('yield',
 'stack_size' => 64*4096,
 'exit' => 'threads_only',
@@ -10,15 +13,9 @@ use IO::Select;
 use Thread::Semaphore;
 use Time::HiRes qw(usleep nanosleep);
 
-my $server = "irc.twitch.tv";
-my $port = 6667;
-my $nick = "botface";
-my $login = "oauth:n40n3ly8rrnkapa3ofysx9kpd21yk0";
-my $channel = "#casplantje";
-
 my $loopTimeOut = 1000; # Todo: find a proper loop timeout that fits irc response times
 my $timeOutSeconds = 120;
-my $timeOutThreshold = 0.25;	# Threshold where to start pinging
+my $timeOutThreshold = 0.05;	# Threshold where to start pinging
 
 # my $debug = *STDOUT;
 open (my $debug, ">", "/dev/null")
@@ -39,14 +36,16 @@ sub connect
 {
 	# todo: move all settings to xml file
 	# todo: add possibility for ssl
-	$sock = new IO::Socket::INET->new(PeerAddr => $server,
-                                PeerPort => $port,
+	# todo: add nickserv support
+	
+	$sock = new IO::Socket::INET->new(PeerAddr => $connection::credentials::server,
+                                PeerPort => $connection::credentials::port,
                                 Proto => 'tcp') or
                                     die "Can't connect\n";
                                     
     $sockSelect = new IO::Select ($sock);
                                     
-    print $sock "PASS $login\r\nNICK $nick\r\n";
+    print $sock "PASS $connection::credentials::login\r\nNICK $connection::credentials::nick\r\n";
 
 	# Read lines from the server until it tells us we have connected.
 	while (my $input = <$sock>) {
@@ -62,7 +61,7 @@ sub connect
 	}
 	
 	
-	print $sock "JOIN $channel\r\n";
+	print $sock "JOIN $connection::credentials::channel\r\n";
 	print "connected!\n";
 	
 	# Create thread; from here on the socket is accessed from multiple
@@ -74,11 +73,14 @@ sub readText
 {
 	print "Reading irc chat\n";
 	# Keep reading lines from the server.
-	# Todo: break out(last) when the connection is lost
+	# Timeout counter; every $timeOutSeconds a ping is done
+	# if the pong is not responded within the threshold the connection
+	# is deemed broken and it will try to reconnect
 	my $timeOutCounterReset = $timeOutSeconds/($loopTimeOut/1000000);
 	my $timeOutCounter = $timeOutCounterReset;
 	print "TimeoutCounter: $timeOutCounter\n";
-	while ($timeOutCounter > 0) {
+	while ($timeOutCounter > (-1 * ($timeOutCounterReset * $timeOutThreshold)))
+	{
 		$sockSemaphore->down();
 		print $debug "downed semaphore in readText\n";
 		my $input;
@@ -92,32 +94,34 @@ sub readText
 			print $debug "end can_read\n";
 
 			chop $input;
-			if ($input)
-			{
-				if ($input =~ /^PING(.*)$/i) {
-					# We must respond to PINGs to avoid being disconnected.
-					print $sock "PONG $1\r\n";
-					print "PONG\n";
-				}
-				elsif ($input =~ /^PONG(.*)$/i) {
-					print "Received Pong!\n";
-					$timeOutCounter = $timeOutCounterReset;
-				}
-				else {
-					handleMessage($input);
-				}
-			}
 		}
 		
 		# Ping counter
 		$timeOutCounter--;
-		if ($timeOutCounter == ($timeOutThreshold * $timeOutCounterReset))
+		if ($timeOutCounter == 0)
 		{
 			print "pinging...\n";
 			print $sock "PING\r\n";
 		}
 		
 		$sockSemaphore->up();
+		
+		if ($input)
+		{
+			if ($input =~ /^PING(.*)$/i) {
+				# We must respond to PINGs to avoid being disconnected.
+				print $sock "PONG $1\r\n";
+				print "PONG\n";
+			}
+			elsif ($input =~ /^PONG(.*)$/i) {
+				print "Received Pong!\n";
+				$timeOutCounter = $timeOutCounterReset;
+			}
+			else {
+				handleMessage($input);
+			}
+		}
+			
 		usleep($loopTimeOut);
 		print $debug "upped semaphore in readText\n";
 		
@@ -144,7 +148,65 @@ sub handleMessage
 		# Todo2: Make a struct to parse the line into
 		# Todo3: Move the actual handling outside the semaphore
 		#		locks
+		if ($message =~ ":(.*)!(.*)@(.*) PRIVMSG (.*) :(.*)")
+		{
+			#print "Nick: $1 $2 Channel: $4 message: $5\n";
+			my %message = (
+				type => "message",
+				nick => $1,
+				fullname => $2,
+				hostname => $3,
+				target => $4,
+				message => $5
+			);
+		}
+		
+		if ($message =~ ".*MODE (.*) ([+-])([aiwroOs]) (.*)")
+		{
+			# First convert the mode code
+			# the add/remove sign
+			my $change;
+			switch ($2)
+			{
+				case "+" { $change = "add"; }
+				case "-" { $change = "remove"; }
+				else { last; }
+			}
+			
+			# the privileges; not all of them are necessary for this
+			# bot framework for now
+			my $privilege;
+			switch ($3)
+			{
+				case "o" { $privilege = "operator"; }
+				case "O" { $privilege = "localOperator"; }
+				else { last; }
+			}
+			
+			my %message = (
+				type => "privilege",
+				chat => $1,
+				change => $change,
+				privilege => $privilege,
+				nick => $4,
+			);
+#			while (my ($k,$v)=each %message){print "$k $v\n"}
+		}
+		
+		# quick and dirty command parsing for testing and fun 
+		if ($message =~ ":(.*)!(.*)@(.*) JOIN (.*)")
+		{
+			print "JOIN: $1\n";
+		}
 		print "$message\n";	
+		if ($message =~ ":casplantje!casplantje.*Botface.*")
+		{
+			sendText("What issit, mate?");
+		}
+		if ($message =~ ":casplantje!casplantje(.*)!salty(.*)")
+		{
+			sendText("Enjoy your complementary salt, $2 PJSalt");
+		}
 }
 
 sub sendText
@@ -154,8 +216,8 @@ sub sendText
 	$sockSemaphore->down();
 	print $debug "Socket rights acquired\n";
 	# will send a message to irc
-		print "PRIVMSG $channel :$text";
-	print $sock "PRIVMSG $channel :$text\r\n";
+		print "PRIVMSG $connection::credentials::channel :$text";
+	print $sock "PRIVMSG $connection::credentials::channel :$text\r\n";
 	$sockSemaphore->up();
 }
 
