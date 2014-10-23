@@ -13,7 +13,7 @@ use connection::credentials;
 use Thread::Semaphore;
 use Time::HiRes qw(usleep nanosleep);
 
-my $loopTimeOut = 1000; # Todo: find a proper loop timeout that fits irc response times
+my $loopTimeOut = 50000; # Todo: find a proper loop timeout that fits irc response times
 my $timeOutSeconds = 120;
 my $timeOutThreshold = 0.05;	# Threshold where to start pinging
 
@@ -107,18 +107,24 @@ sub readText
 		$sockSemaphore->up();
 		
 		if ($input)
-		{
-			if ($input =~ /^PING(.*)$/i) {
-				# We must respond to PINGs to avoid being disconnected.
-				print $sock "PONG $1\r\n";
-				print "PONG\n";
-			}
-			elsif ($input =~ /^PONG(.*)$/i) {
-				print "Received Pong!\n";
-				$timeOutCounter = $timeOutCounterReset;
-			}
-			else {
-				handleMessage($input);
+		{		
+			# Lines can be concaternated, so pull them apart and handle
+			# them separately
+			my @inputLines = split('\r\n', $input);
+			foreach my $line (@inputLines)
+			{
+				if ($line =~ /^PING(.*)$/i) {
+					# We must respond to PINGs to avoid being disconnected.
+					print $sock "PONG $1\r\n";
+					print "Replied on ping!\n";
+				}
+				elsif ($line =~ /^PONG(.*)$/i) {
+					print "Received Pong!\n";
+					$timeOutCounter = $timeOutCounterReset;
+				} else
+				{
+					handleMessage($line);
+				}
 			}
 		}
 			
@@ -142,16 +148,13 @@ sub readText
 sub handleMessage
 {
 		my ($message) = @_;
-		# This will be replaced by a function in the core
-		# handling input
-		# Todo: parse a line to a hash
-		# Todo2: Make a struct to parse the line into
-		# Todo3: Move the actual handling outside the semaphore
-		#		locks
+		my %message;
+		
+		# Text message
 		if ($message =~ ":(.*)!(.*)@(.*) PRIVMSG (.*) :(.*)")
 		{
 			#print "Nick: $1 $2 Channel: $4 message: $5\n";
-			my %message = (
+			%message = (
 				type => "message",
 				nick => $1,
 				fullname => $2,
@@ -183,22 +186,37 @@ sub handleMessage
 				else { last; }
 			}
 			
-			my %message = (
+			%message = (
 				type => "privilege",
 				chat => $1,
 				change => $change,
 				privilege => $privilege,
 				nick => $4,
 			);
-#			while (my ($k,$v)=each %message){print "$k $v\n"}
 		}
 		
-		# quick and dirty command parsing for testing and fun 
-		if ($message =~ ":(.*)!(.*)@(.*) JOIN (.*)")
+		if ($message =~ ":(.*)!(.*)@(.*) (JOIN|PART) (#[a-zA-Z]*)")
 		{
-			print "JOIN: $1\n";
+			my $update;
+			switch ($4)
+			{
+				case "JOIN" { $update = "enter"; }
+				case "PART" { $update = "leave"; }
+				else { last; }
+			}
+			#print "Nick: $1 $2 Channel: $4 message: $5\n";
+			%message = (
+				type => "userupdate",
+				nick => $1,
+				fullname => $2,
+				hostname => $3,
+				update => $update,
+				target => $5
+			);
 		}
-		print "$message\n";	
+		
+		while (my ($k,$v)=each %message){print "$k $v\n"}
+		print "Original Message: $message\n";	
 		if ($message =~ ":casplantje!casplantje.*Botface.*")
 		{
 			sendText("What issit, mate?");
