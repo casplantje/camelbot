@@ -3,6 +3,7 @@ package connection::irc;
 use strict;
 use Switch;
 use IO::Socket;
+use IO::Socket::SSL;
 use IO::Select;
 use connection::credentials;
 
@@ -34,18 +35,33 @@ print "loaded irc module!\n";
 
 sub connect
 {
-	# todo: move all settings to xml file
-	# todo: add possibility for ssl
-	# todo: add nickserv support
+	# todo: test ssl
+	# todo: test nickserv
 	
-	$sock = new IO::Socket::INET->new(PeerAddr => $connection::credentials::server,
-                                PeerPort => $connection::credentials::port,
-                                Proto => 'tcp') or
-                                    die "Can't connect\n";
+	if ($connection::credentials::ssl)
+	{
+		$sock = IO::Socket::SSL->new(PeerAddr => $connection::credentials::server,
+									PeerPort => $connection::credentials::port) or
+									die "Can't connect\n";	
+	}
+	else
+	{
+		$sock = new IO::Socket::INET->new(PeerAddr => $connection::credentials::server,
+									PeerPort => $connection::credentials::port,
+									Proto => 'tcp') or
+										die "Can't connect\n";
+	}
+         
                                     
     $sockSelect = new IO::Select ($sock);
-                                    
-    print $sock "PASS $connection::credentials::login\r\nNICK $connection::credentials::nick\r\n";
+
+	# Server password
+    if ($connection::credentials::login)
+    {
+		print $sock "PASS $connection::credentials::login\r\n";
+	}
+	
+    print $sock "NICK $connection::credentials::nick\r\n";
 
 	# Read lines from the server until it tells us we have connected.
 	while (my $input = <$sock>) {
@@ -58,6 +74,12 @@ sub connect
 			die "Nickname is already in use.";
 		}
 		print "$input\n";
+	}
+	
+	# Nickserv password
+    if ($connection::credentials::nickservlogin)
+    {
+		print $sock "nickserv identify $connection::credentials::nickservlogin\r\n";
 	}
 	
 	
