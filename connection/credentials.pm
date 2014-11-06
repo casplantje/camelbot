@@ -1,32 +1,25 @@
 package connection::credentials;
 use strict;
-use XML::LibXML '1.70';
+use XML::LibXML::Simple   qw(XMLin);
 use Switch;
+use Data::Dumper;
 
 # reads all credentials for irc
-# global variables for settings
-our $server;
-our $port;
-our $nick;
-our $login;
-our $channel;
-our $ssl;
-our $nickservlogin;
+my $ircsettings = XMLin("credentials.xml");
 
-my $parser = XML::LibXML->new();
-my $settings = $parser->parse_file("credentials.xml");
-
-for my $property ($settings->findnodes('/ircsettings/*')) {
-	switch ($property->nodeName())
-			{
-				case "server" { $server = $property->textContent(); }
-				case "port" { $port = $property->textContent(); }
-				case "nick" { $nick = $property->textContent(); }
-				case "login" { $login = $property->textContent(); }
-				case "nickservlogin" { $nickservlogin = $property->textContent(); }
-				case "channel" { $channel = $property->textContent(); }
-				case "ssl" { $ssl = $property->textContent(); }
-			}
+sub ircSetting
+{
+	my ($setting) = @_;
+	
+	# check whether the call is from connection::irc
+	my ($package) = caller;
+	if ($package == "connection::irc")
+	{
+		return ($ircsettings)[0]{$setting};
+	} else
+	{
+		die "Settings not retrieved by connection::irc!";
+	}
 }
 
 1;

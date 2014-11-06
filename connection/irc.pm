@@ -38,16 +38,16 @@ sub connect
 	# todo: test ssl
 	# todo: test nickserv
 	
-	if ($connection::credentials::ssl)
+	if (connection::credentials::ircSetting("ssl"))
 	{
-		$sock = IO::Socket::SSL->new(PeerAddr => $connection::credentials::server,
-									PeerPort => $connection::credentials::port) or
+		$sock = IO::Socket::SSL->new(PeerAddr => connection::credentials::ircSetting("server"),
+									PeerPort => connection::credentials::ircSetting("port")) or
 									die "Can't connect\n";	
 	}
 	else
 	{
-		$sock = new IO::Socket::INET->new(PeerAddr => $connection::credentials::server,
-									PeerPort => $connection::credentials::port,
+		$sock = new IO::Socket::INET->new(PeerAddr => connection::credentials::ircSetting("server"),
+									PeerPort => connection::credentials::ircSetting("port"),
 									Proto => 'tcp') or
 										die "Can't connect\n";
 	}
@@ -56,12 +56,12 @@ sub connect
     $sockSelect = new IO::Select ($sock);
 
 	# Server password
-    if ($connection::credentials::login)
+    if (connection::credentials::ircSetting("login"))
     {
-		print $sock "PASS $connection::credentials::login\r\n";
+		print $sock "PASS " . connection::credentials::ircSetting("login") . "\r\n";
 	}
 	
-    print $sock "NICK $connection::credentials::nick\r\n";
+    print $sock "NICK " . connection::credentials::ircSetting("nick") . "\r\n";
 
 	# Read lines from the server until it tells us we have connected.
 	while (my $input = <$sock>) {
@@ -77,13 +77,13 @@ sub connect
 	}
 	
 	# Nickserv password
-    if ($connection::credentials::nickservlogin)
+    if (connection::credentials::ircSetting("nickservlogin"))
     {
-		print $sock "nickserv identify $connection::credentials::nickservlogin\r\n";
+		print $sock "nickserv identify " . connection::credentials::ircSetting("nickservlogin") . "\r\n";
 	}
 	
 	
-	print $sock "JOIN $connection::credentials::channel\r\n";
+	print $sock "JOIN " . connection::credentials::ircSetting("channel") . "\r\n";
 	print "connected!\n";
 	
 	# Create thread; from here on the socket is accessed from multiple
@@ -256,8 +256,8 @@ sub sendText
 	$sockSemaphore->down();
 	print $debug "Socket rights acquired\n";
 	# will send a message to irc
-		print "PRIVMSG $connection::credentials::channel :$text";
-	print $sock "PRIVMSG $connection::credentials::channel :$text\r\n";
+		print "PRIVMSG " . connection::credentials::ircSetting("channel") . " :$text";
+	print $sock "PRIVMSG " . connection::credentials::ircSetting("channel") . " :$text\r\n";
 	$sockSemaphore->up();
 }
 
