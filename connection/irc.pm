@@ -237,7 +237,9 @@ sub handleMessage
 			);
 		}
 		
+		# Print messages for debugging
 		while (my ($k,$v)=each %message){print "$k $v\n"}
+		
 		print "Original Message: $message\n";	
 		if ($message =~ ":casplantje!casplantje.*Botface.*")
 		{
