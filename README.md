@@ -26,3 +26,6 @@ retrieved by plugins
     * The triggers can have a cooldown time
 * Plugins can add new interfaces that can be used by other plugins
 * All settings are saved in xml format
+
+Nice to have:
+* Plugin that generates visitor graphs
