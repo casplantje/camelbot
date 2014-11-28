@@ -12,6 +12,9 @@ use core::pluginmanager;
 sub new
 {
 	print "hello world!\n";
+	core::pluginmanager::loadPlugins();
+	core::pluginmanager::unloadPlugins();
+	core::pluginmanager::loadPlugins();
 	connection::irc::connect();
 	#connection::irc::readText();
 	while (1){

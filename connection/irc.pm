@@ -6,11 +6,13 @@ use IO::Socket;
 use IO::Socket::SSL;
 use IO::Select;
 use connection::credentials;
+use core::pluginmanager;
 
- use threads ('yield',
-'stack_size' => 64*4096,
-'exit' => 'threads_only',
-'stringify');
+ use threads (	'yield',
+				'stack_size' => 64*4096,
+				'exit' => 'threads_only',
+				'stringify');
+				
 use Thread::Semaphore;
 use Time::HiRes qw(usleep nanosleep);
 
@@ -248,6 +250,12 @@ sub handleMessage
 		if ($message =~ ":casplantje!casplantje(.*)!salty(.*)")
 		{
 			sendText("Enjoy your complementary salt, $2 PJSalt");
+		}
+		
+		# TODO: replace with handler function in core.pm
+		if ($message{type} == "message")
+		{
+			core::pluginmanager::handleMessageRegex(\%message);
 		}
 }
 
