@@ -26,6 +26,7 @@ retrieved by plugins
     * The triggers can have a cooldown time
 * Plugins can add new interfaces that can be used by other plugins
 * All settings are saved in xml format
+* Twitch regularly derps out revoking all mod rights and reinstating them a few moments later; camelbot  must handle this strange behaviour properly, preferably without the temporary mod outage
 
 Nice to have:
 * Plugin that generates visitor graphs
