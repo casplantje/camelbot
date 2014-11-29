@@ -247,10 +247,10 @@ sub handleMessage
 		{
 			sendText("What issit, mate?");
 		}
-		if ($message =~ ":casplantje!casplantje(.*)!salty(.*)")
-		{
-			sendText("Enjoy your complementary salt, $2 PJSalt");
-		}
+	#	if ($message =~ ":casplantje!casplantje(.*)!salty(.*)")
+	#	{
+	#		sendText("Enjoy your complementary salt, $2 PJSalt");
+	#	}
 		
 		# TODO: replace with handler function in core.pm
 		if ($message{type} == "message")
