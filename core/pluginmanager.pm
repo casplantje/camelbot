@@ -8,6 +8,7 @@ package core::pluginmanager;
 use strict; use warnings;
 use Module::Load;
 use Symbol 'delete_package';
+use Time::HiRes qw(time);
 
 # add include directories
 push ( @INC,"../plugins");
@@ -16,7 +17,57 @@ my $plugindir = "plugins";
 my @plugins;
 my @pluginfiles;
 my @regexes;
+my @polls;
 
+# Polling management functions
+sub registerPoll
+{
+	my ($poll) = @_;
+	$poll->{lastTrigger} = time;
+	push @polls, $poll;
+}
+
+sub unregisterPoll
+{
+	my ($poll) = @_;
+	my $i = 0;
+	
+	foreach my $currentPoll (@polls)
+	{
+		if ($currentPoll == $poll)
+		{
+			splice @regexes, $i, 1;
+		}
+		$i++;
+	}	
+}
+
+sub listPolls
+{
+	foreach my $poll (@polls)
+	{
+		print $poll->{name} . "\n";
+		# todo: either return it as a string array
+		#		or send the lines as a message
+	}
+}
+
+sub handlePolls
+{
+	my $currentTime = time;
+
+	foreach my $poll (@polls)
+	{
+		if (($poll->{lastTrigger} + $poll->{interval}) < $currentTime)
+		{
+			$poll->{lastTrigger} = time;
+			$poll->{handler}();
+			print "polled".time."\n";
+		}
+	}
+}
+
+# Regex management functions
 sub registerRegex
 {
 	my ($regex) = @_;
@@ -43,6 +94,8 @@ sub listRegexes
 	foreach my $regex (@regexes)
 	{
 		print $regex->{name} . "\n";
+		# todo: either return it as a string array
+		#		or send the lines as a message
 	}
 }
 

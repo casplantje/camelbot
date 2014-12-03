@@ -18,12 +18,13 @@ sub new
 	connection::irc::connect();
 	#connection::irc::readText();
 	while (1){
-		my $input =  readline(*STDIN);
-		if ($input =~ "PING")
-		{
-			connection::irc::sendCommand("PING");
-		}
-		connection::irc::sendText($input);
+		#my $input =  readline(*STDIN);
+		#if ($input =~ "PING")
+		#{
+		#	connection::irc::sendCommand("PING");
+		#}
+		#connection::irc::sendText($input);
+			core::pluginmanager::handlePolls;
 		};
 	return 1;
 }

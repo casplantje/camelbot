@@ -17,6 +17,7 @@ sub regexAction1
 	print "regexAction1 match!\n";
 }
 
+# Regex handler 2
 my %regex2 = (
 	name => "RegexHandler2",
 	regex => "!salty\ (.*)",
@@ -33,10 +34,23 @@ sub regexAction2
 	print "\nRegex match 2! Enjoy your complementary salt, " . $name . " PJSalt\n";
 }
 
+# Poll handler 1
+my %poll1 = (
+	name => "PollHandler2",
+	interval => 1,
+	handler => \&pollAction1
+);
+
+sub pollAction1
+{
+	print "Polling something...\n";
+}
+
 sub loadPlugin
 {
 	core::pluginmanager::registerRegex(\%regex1);
 	core::pluginmanager::registerRegex(\%regex2);
+	core::pluginmanager::registerPoll(\%poll1);
 	print "Loaded testplugin!\n";
 }
 
@@ -44,6 +58,7 @@ sub unloadPlugin
 {
 	core::pluginmanager::unregisterRegex(\%regex1);
 	core::pluginmanager::unregisterRegex(\%regex2);
+	core::pluginmanager::unregisterPoll(\%poll1);
 	print "Unloaded testplugin!\n";
 }
 
