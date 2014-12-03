@@ -3,6 +3,7 @@ package plugins::testplugin;
 use Data::Dumper;
 use core::pluginmanager;
 use strict; use warnings;
+use connection::chatconnection;
 
 # Regex handler 1
 my %regex1 = (
@@ -15,6 +16,7 @@ sub regexAction1
 {
 	my ($message, @regexMatches) = @_;
 	print "regexAction1 match!\n";
+	connection::chatconnection::sendMessage("What issit, mate?");
 }
 
 # Regex handler 2
@@ -31,7 +33,8 @@ sub regexAction2
 	my $name = $$regexMatches[0];
 	$name =~ s/^\s+|\s+$//g; # Regex matches can contain rather strange whitespaces
 	
-	print "\nRegex match 2! Enjoy your complementary salt, " . $name . " PJSalt\n";
+	print "\nEnjoy your complementary salt, " . $name . " PJSalt\n";
+	connection::chatconnection::sendMessage("Enjoy your complementary salt, " . $name . " PJSalt");
 }
 
 # Poll handler 1
@@ -43,7 +46,7 @@ my %poll1 = (
 
 sub pollAction1
 {
-	print "Polling something...\n";
+	#print "Polling something...\n";
 }
 
 sub loadPlugin

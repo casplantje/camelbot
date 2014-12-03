@@ -31,12 +31,12 @@ sub unregisterPoll
 {
 	my ($poll) = @_;
 	my $i = 0;
-	
+
 	foreach my $currentPoll (@polls)
 	{
 		if ($currentPoll == $poll)
 		{
-			splice @regexes, $i, 1;
+			splice @polls, $i, 1;
 		}
 		$i++;
 	}	
@@ -55,14 +55,13 @@ sub listPolls
 sub handlePolls
 {
 	my $currentTime = time;
-
+	
 	foreach my $poll (@polls)
 	{
 		if (($poll->{lastTrigger} + $poll->{interval}) < $currentTime)
 		{
-			$poll->{lastTrigger} = time;
+			$poll->{lastTrigger} = $currentTime;
 			$poll->{handler}();
-			print "polled".time."\n";
 		}
 	}
 }
@@ -160,7 +159,7 @@ sub unloadPlugins
 		delete $INC{$modulefile};
 	}
 	
-	# Check and if necessary empty the regex array
+	# Check and if necessary empty the regex and poll array
 	# This is only to tidy up if plugins don't unregister
 	# their regexes properly
 	foreach my $regex (@regexes)
@@ -168,6 +167,12 @@ sub unloadPlugins
 		print "Warning! Regex " . $regex->{name} . " wasn't unloaded properly. Check the unloadPlugin of its module!\n";
 	}
 	@regexes = ();
+	
+	foreach my $poll (@polls)
+	{
+		print "Warning! poll " . $poll->{name} . " wasn't unloaded properly. Check the unloadPlugin of its module!\n";
+	}
+	@polls = ();
 }
 
 print "loaded plugin manager module!\n";

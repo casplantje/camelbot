@@ -243,14 +243,6 @@ sub handleMessage
 		while (my ($k,$v)=each %message){print "$k $v\n"}
 		
 		print "Original Message: $message\n";	
-		if ($message =~ ":casplantje!casplantje.*Botface.*")
-		{
-			sendText("What issit, mate?");
-		}
-	#	if ($message =~ ":casplantje!casplantje(.*)!salty(.*)")
-	#	{
-	#		sendText("Enjoy your complementary salt, $2 PJSalt");
-	#	}
 		
 		# TODO: replace with handler function in core.pm
 		if ($message{type} == "message")
@@ -261,13 +253,23 @@ sub handleMessage
 
 sub sendText
 {
-	my ($text) = @_;
+	my @arguments = @{$_[0]};
+	my $text;
+	my $target = connection::credentials::ircSetting("channel");
+
+	switch ($#arguments)
+	{
+		case 0 { ($text) = @arguments; }
+		case 1 { ($text, $target) = @arguments; }
+		else { last; }
+	}
+	
 	print $debug "Going to send...\n";
 	$sockSemaphore->down();
 	print $debug "Socket rights acquired\n";
 	# will send a message to irc
-		print "PRIVMSG " . connection::credentials::ircSetting("channel") . " :$text";
-	print $sock "PRIVMSG " . connection::credentials::ircSetting("channel") . " :$text\r\n";
+		print "PRIVMSG " . $target . " :$text";
+	print $sock "PRIVMSG " . $target . " :$text\r\n";
 	$sockSemaphore->up();
 }
 

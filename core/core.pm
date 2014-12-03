@@ -6,7 +6,7 @@ use strict; use warnings;
 push ( @INC,"../connection");
 
 # invoke modules
-use connection::irc;
+use connection::chatconnection;
 use core::pluginmanager;
 
 sub new
@@ -15,7 +15,8 @@ sub new
 	core::pluginmanager::loadPlugins();
 	core::pluginmanager::unloadPlugins();
 	core::pluginmanager::loadPlugins();
-	connection::irc::connect();
+	connection::chatconnection::connect();
+	core::pluginmanager::listPolls;
 	#connection::irc::readText();
 	while (1){
 		#my $input =  readline(*STDIN);
