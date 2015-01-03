@@ -8,7 +8,7 @@ use connection::chatconnection;
 # Regex handler 1
 my %regex1 = (
 	name => "RegexHandler1",
-	regex => ".*Botface.*",
+	regex => ".*[bB]otface.*",
 	handler => \&regexAction1
 );
 
@@ -31,7 +31,7 @@ sub regexAction2
 	my $message = shift;
 	my $regexMatches = shift;
 	my $name = $$regexMatches[0];
-	$name =~ s/^\s+|\s+$//g; # Regex matches can contain rather strange whitespaces
+	$name =~ s/^\s+|\s+$//g; # Regex matches can contain rather strange whitespaces. Don't know why
 	
 	print "\nEnjoy your complementary salt, " . $name . " PJSalt\n";
 	connection::chatconnection::sendMessage("Enjoy your complementary salt, " . $name . " PJSalt");

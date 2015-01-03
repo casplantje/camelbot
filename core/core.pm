@@ -12,6 +12,7 @@ use core::pluginmanager;
 sub new
 {
 	print "hello world!\n";
+	core::pluginmanager::loadPluginList;
 	core::pluginmanager::loadPlugins();
 	core::pluginmanager::unloadPlugins();
 	core::pluginmanager::loadPlugins();

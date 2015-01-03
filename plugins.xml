@@ -1,0 +1,4 @@
+<plugins>
+  <plugin enabled="1" module="testplugin" />
+  <plugin enabled="0" module="testplugin2" />
+</plugins>

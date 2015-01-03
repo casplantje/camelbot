@@ -9,6 +9,9 @@ use strict; use warnings;
 use Module::Load;
 use Symbol 'delete_package';
 use Time::HiRes qw(time);
+use XML::Simple;
+
+  use Data::Dumper;
 
 # add include directories
 push ( @INC,"../plugins");
@@ -18,6 +21,9 @@ my @plugins;
 my @pluginfiles;
 my @regexes;
 my @polls;
+
+my $xs = new XML::Simple(keeproot => 1,searchpath => "."); #, forcearray => 1);
+my $pluginsXML;
 
 # Polling management functions
 sub registerPoll
@@ -122,27 +128,24 @@ sub handleMessageRegex
 	}
 }
 
+# Read hash reference $pluginsXML to load all enabled plugins
 sub loadPlugins
 {
-	opendir (DIR, "./$plugindir") or die $!;
-	
-	while (my $file = readdir(DIR))
+	foreach my $xmlPlugin (@{$pluginsXML->{plugins}->{plugin}})
 	{
-		if ($file =~ "(.*)\.pm")
+		if ($xmlPlugin->{enabled})
 		{
-				print "Loading $file\n";
-				my $module = "$plugindir::$1";
-				my $modulepath = "$plugindir/$1.pm";
-				load $module;
-				# Call load function
-				$module->loadPlugin;
-				# add plugin to list
-				push @plugins, $module;
-				push @pluginfiles, $modulepath;
+			print "Loading $xmlPlugin->{module}\n";
+			my $module = "$plugindir::$xmlPlugin->{module}";
+			my $modulepath = "$plugindir/$xmlPlugin->{module}.pm";
+			load $module;
+			# Call load function
+			$module->loadPlugin;
+			# add plugin to list
+			push @plugins, $module;
+			push @pluginfiles, $modulepath;
 		}
 	}
-	
-	closedir (DIR) or die $1;
 }
 
 sub unloadPlugins
@@ -173,6 +176,20 @@ sub unloadPlugins
 		print "Warning! poll " . $poll->{name} . " wasn't unloaded properly. Check the unloadPlugin of its module!\n";
 	}
 	@polls = ();
+}
+
+# Load the plugins xml into hash reference $pluginsXML
+sub loadPluginList
+{
+	$pluginsXML = $xs->XMLin("plugins.xml");
+}
+
+# Write hash reference $pluginsXML back to the xml file
+sub savePluginList
+{
+	open(my $fh, '>', 'plugins.xml');
+	print $fh $xs->XMLout($pluginsXML);
+	close $fh;
 }
 
 print "loaded plugin manager module!\n";
