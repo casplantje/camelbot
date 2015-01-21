@@ -8,6 +8,7 @@ push ( @INC,"../connection");
 # invoke modules
 use connection::chatconnection;
 use core::pluginmanager;
+use core::groupmanager;
 
 sub new
 {
