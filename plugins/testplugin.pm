@@ -39,7 +39,7 @@ sub regexAction2
 
 # Poll handler 1
 my %poll1 = (
-	name => "PollHandler2",
+	name => "PollHandler1",
 	interval => 1,
 	handler => \&pollAction1
 );
