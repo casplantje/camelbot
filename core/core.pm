@@ -17,17 +17,18 @@ sub new
 	core::pluginmanager::unloadPlugins();
 	core::pluginmanager::loadPlugins();
 	connection::chatconnection::connect();
-	core::pluginmanager::listPolls;
-	#connection::irc::readText();
-	while (1){
-		#my $input =  readline(*STDIN);
-		#if ($input =~ "PING")
-		#{
-		#	connection::irc::sendCommand("PING");
-		#}
-		#connection::irc::sendText($input);
-			core::pluginmanager::handlePolls;
-		};
+	my @polls = core::pluginmanager::listPolls;
+	print "Polls:\n";
+	foreach my $poll (@polls)
+	{
+			print "$poll\n";
+	}
+
+	while (1)
+	{
+		#todo: limit poll handling interval
+		core::pluginmanager::handlePolls;
+	};
 	return 1;
 }
 

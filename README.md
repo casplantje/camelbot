@@ -15,6 +15,7 @@ Requirements:
   * There are builtin commands for the group management
   * Only the group "poweruser" is able to manage users and groups
   * a list of all users with groups(internal and external) can be 
+  * the group management works with an SQLite database
 retrieved by plugins
 * a list of regular expressions is managed to trigger plugin functions
   * Plugin functions triggered by a regex get a readily parsed message pushed to them

@@ -50,12 +50,12 @@ sub unregisterPoll
 
 sub listPolls
 {
+	my @result;
 	foreach my $poll (@polls)
 	{
-		print $poll->{name} . "\n";
-		# todo: either return it as a string array
-		#		or send the lines as a message
+		push @result, $poll->{name};
 	}
+	return @result;
 }
 
 sub handlePolls
