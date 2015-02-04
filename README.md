@@ -31,3 +31,4 @@ retrieved by plugins
 
 Nice to have:
 * Plugin that generates visitor graphs
+* A SOAP API so external interface applications can connect to it
