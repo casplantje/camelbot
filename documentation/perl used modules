@@ -1,0 +1,11 @@
+List of all perl modules used
+
+use Switch;
+use IO::Socket;
+use IO::Socket::SSL;
+use IO::Select;
+use connection::credentials;
+use core::pluginmanager;
+use XML::LibXML::Simple
+use List::MoreUtils;
+use DBI;

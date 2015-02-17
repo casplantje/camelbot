@@ -1,0 +1,42 @@
+functions implemented:
+getUserGroupPrivileges
+getUserUserPrivileges
+getUserPrivileges
+getUserGroups
+
+functions to implement:
+getGroupPrivileges
+
+deleteUser
+deleteGroup
+deletePrivilege
+
+addUser
+addGroup
+addPrivilege
+
+addUserToGroup
+addPrivilegeToUser
+addPrivilegeToGroup
+
+deleteUserFromGroup
+deletePrivilegeFromUser
+deletePrivilegeFromGroup
+
+
+
+
+Arbitrary query notes:
+
+SELECT DISTINCT privileges.name FROM users
+INNER JOIN userprivileges ON userprivileges.userid = users.id 
+INNER JOIN privileges ON userprivileges.privilegeid = privileges.id
+WHERE users.name="casplantje"
+
+
+SELECT DISTINCT privileges.name FROM users 
+INNER JOIN usergroups ON users.id = usergroups.userid 
+INNER JOIN groups ON groups.id = usergroups.groupid 
+INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
+INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
+WHERE users.name="casplantje"
