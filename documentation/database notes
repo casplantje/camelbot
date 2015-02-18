@@ -4,12 +4,20 @@ getUserUserPrivileges
 getUserPrivileges
 getUserGroups
 
-functions to implement:
 getGroupPrivileges
+
+listUsers
+listGroups
+listPrivileges
 
 deleteUser
 deleteGroup
 deletePrivilege
+
+functions partially implemented:
+sqlError
+
+functions to implement:
 
 addUser
 addGroup
@@ -40,3 +48,8 @@ INNER JOIN groups ON groups.id = usergroups.groupid
 INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
 INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
 WHERE users.name="casplantje"
+
+SELECT DISTINCT privileges.name FROM groups
+INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
+INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
+WHERE groups.name="supermods"
