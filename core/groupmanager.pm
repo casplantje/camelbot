@@ -4,6 +4,8 @@ use List::MoreUtils qw(zip);
 use strict;
 use DBI;
 
+# TODO: make all functions that use the db connection threadsafe
+
 # Will contain the code to manage groups
 #   there will also be functions to allow plugins to inject user/group properties (for example to use the twitch api)
 
@@ -176,8 +178,41 @@ sub deletePrivilege
 	return $rv;	
 }
 
+sub addUser
+{
+	my ($username) = @_;
+	my $stmt = qq(INSERT INTO users (name)
+					SELECT "$username"
+					WHERE NOT EXISTS (SELECT * FROM users WHERE name = "$username"));
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
+
+sub addGroup
+{
+	my ($groupname) = @_;
+	my $stmt = qq(INSERT INTO groups (name)
+					SELECT "$groupname"
+					WHERE NOT EXISTS (SELECT * FROM groups WHERE name = "$groupname"));
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
+
+sub addPrivilege
+{
+	my ($privilegename) = @_;
+	my $stmt = qq(INSERT INTO privileges (name)
+					SELECT "$privilegename"
+					WHERE NOT EXISTS (SELECT * FROM privileges WHERE name = "$privilegename"));
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
 
 # test code
+	addPrivilege("testprivilege");
 	my @users = listUsers();
 	print "Users:\n".join("\n", @users)."\n";
 

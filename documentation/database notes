@@ -14,14 +14,14 @@ deleteUser
 deleteGroup
 deletePrivilege
 
+addUser
+addGroup
+addPrivilege
+
 functions partially implemented:
 sqlError
 
 functions to implement:
-
-addUser
-addGroup
-addPrivilege
 
 addUserToGroup
 addPrivilegeToUser
@@ -53,3 +53,10 @@ SELECT DISTINCT privileges.name FROM groups
 INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
 INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
 WHERE groups.name="supermods"
+
+INSERT INTO users (name)
+	SELECT "testuser"
+WHERE NOT EXISTS (SELECT * FROM users WHERE name = "testuser")
+
+INSERT INTO usergroups (userid, groupid)
+	SELECT users.id, groups.id  FROM users, groups WHERE users.name = "testuser" AND groups.name = "testgroup"
