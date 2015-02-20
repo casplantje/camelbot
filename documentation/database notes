@@ -18,14 +18,14 @@ addUser
 addGroup
 addPrivilege
 
+addUserToGroup
+addPrivilegeToUser
+addPrivilegeToGroup
+
 functions partially implemented:
 sqlError
 
 functions to implement:
-
-addUserToGroup
-addPrivilegeToUser
-addPrivilegeToGroup
 
 deleteUserFromGroup
 deletePrivilegeFromUser

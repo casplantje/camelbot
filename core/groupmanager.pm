@@ -211,8 +211,41 @@ sub addPrivilege
 	return 0;
 }
 
+sub addUserToGroup
+{
+	my ($username, $groupname) = @_;
+	my $stmt = qq(INSERT INTO usergroups (userid, groupid)
+					SELECT users.id, groups.id  FROM users, groups 
+					WHERE users.name = "$username" AND groups.name = "$groupname");
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
+
+sub addPrivilegeToUser
+{
+	my ($privilegename, $username) = @_;
+	my $stmt = qq(INSERT INTO userprivileges (userid, privilegeid)
+					SELECT users.id, privileges.id  FROM users, privileges
+					WHERE users.name = "$username" AND privileges.name = "$privilegename");
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
+
+sub addPrivilegeToGroup
+{
+	my ($privilegename, $groupname) = @_;
+	my $stmt = qq(INSERT INTO groupprivileges (groupid, privilegeid)
+					SELECT groups.id, privileges.id  FROM groups, privileges
+					WHERE groups.name = "$groupname" AND privileges.name = "$privilegename");
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	
+	return 0;
+}
+
 # test code
-	addPrivilege("testprivilege");
+	addPrivilegeToGroup("testprivilege", "testgroup");
 	my @users = listUsers();
 	print "Users:\n".join("\n", @users)."\n";
 
