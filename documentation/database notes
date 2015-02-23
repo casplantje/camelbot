@@ -22,15 +22,17 @@ addUserToGroup
 addPrivilegeToUser
 addPrivilegeToGroup
 
-functions partially implemented:
-sqlError
-
-functions to implement:
+userHasPrivilege
 
 deleteUserFromGroup
 deletePrivilegeFromUser
 deletePrivilegeFromGroup
 
+
+functions partially implemented:
+sqlError
+
+functions to implement:
 
 
 

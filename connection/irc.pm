@@ -8,7 +8,7 @@ use IO::Select;
 use connection::credentials;
 use core::pluginmanager;
 
- use threads (	'yield',
+use threads (	'yield',
 				'stack_size' => 64*4096,
 				'exit' => 'threads_only',
 				'stringify');

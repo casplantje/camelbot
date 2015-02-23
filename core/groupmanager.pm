@@ -4,25 +4,29 @@ use List::MoreUtils qw(zip);
 use strict;
 use DBI;
 
-# TODO: make all functions that use the db connection threadsafe
+use threads (	'yield',
+				'stack_size' => 64*4096,
+				'exit' => 'threads_only',
+				'stringify');
+				
+use Thread::Semaphore;
 
-# Will contain the code to manage groups
-#   there will also be functions to allow plugins to inject user/group properties (for example to use the twitch api)
+my $dbSemaphore =  Thread::Semaphore->new();
+
+my $database;
+
+# This module contains functions to manage user and group privileges
 
 # General error reporting function
 # Camelbot should not die because of a single sql failure
-#
-# TODO: add some error diagnosis and solving code to sqlError
-#		only die if no solution works
-#		The function causing the error will have to return
-#		but it will do so gracefully.
 sub sqlError
 {
+	$database->rollback();
 	my ($errorMessage) = @_;
 	print "$errorMessage\n";
 }
 
-my $database = DBI->connect("dbi:SQLite:dbname=groupmanagement.db","","")
+$database = DBI->connect("dbi:SQLite:dbname=groupmanagement.db","","")
 	or sqlError $DBI::errstr and return ();
 
 sub getUserGroups
@@ -32,8 +36,12 @@ sub getUserGroups
 					INNER JOIN usergroups ON users.id = usergroups.userid 
 					INNER JOIN groups ON groups.id = usergroups.groupid 
 					WHERE users.name="$username");
+	
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -49,8 +57,12 @@ sub getUserUserPrivileges
 					INNER JOIN userprivileges ON userprivileges.userid = users.id 
 					INNER JOIN privileges ON userprivileges.privilegeid = privileges.id
 					WHERE users.name="$username");
+					
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -68,8 +80,12 @@ sub getUserGroupPrivileges
 					INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
 					INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
 					WHERE users.name="$username");
+					
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -93,8 +109,12 @@ sub getGroupPrivileges
 					INNER JOIN groupprivileges ON groups.id = groupprivileges.groupid 
 					INNER JOIN privileges ON privileges.id = groupprivileges.privilegeid 
 					WHERE groups.name="$groupname");
+					
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -106,8 +126,12 @@ sub getGroupPrivileges
 sub listUsers
 {
 	my $stmt = qq(SELECT name FROM users);
+	
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -119,8 +143,11 @@ sub listUsers
 sub listGroups
 {
 	my $stmt = qq(SELECT name FROM groups);
+	
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -132,8 +159,12 @@ sub listGroups
 sub listPrivileges
 {
 	my $stmt = qq(SELECT name FROM privileges);
+	
+	$dbSemaphore->down();
 	my $sth = $database->prepare($stmt);
 	my $rv = $sth->execute() or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	my @result;
 	
 	while(my @row = $sth->fetchrow_array()) {
@@ -145,8 +176,12 @@ sub listPrivileges
 sub deleteUser
 {
 	my ($username) = @_;
-	my $stmt = qq(DELETE FROM users WHERE name="$username";);
+	my $stmt = qq(DELETE FROM users WHERE name="$username");
+	
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	if( $rv < 0 ){
 	   print $DBI::errstr;
 	}
@@ -157,8 +192,12 @@ sub deleteUser
 sub deleteGroup
 {
 	my ($groupname) = @_;
-	my $stmt = qq(DELETE FROM groups WHERE name="$groupname";);
+	my $stmt = qq(DELETE FROM groups WHERE name="$groupname");
+	
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	if( $rv < 0 ){
 	   print $DBI::errstr;
 	}
@@ -169,8 +208,12 @@ sub deleteGroup
 sub deletePrivilege
 {
 	my ($privilegename) = @_;
-	my $stmt = qq(DELETE FROM users WHERE name="$privilegename";);
+	my $stmt = qq(DELETE FROM users WHERE name="$privilegename");
+	
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return ();
+	$dbSemaphore->up();
+	
 	if( $rv < 0 ){
 	   print $DBI::errstr;
 	}
@@ -184,7 +227,10 @@ sub addUser
 	my $stmt = qq(INSERT INTO users (name)
 					SELECT "$username"
 					WHERE NOT EXISTS (SELECT * FROM users WHERE name = "$username"));
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
@@ -195,7 +241,10 @@ sub addGroup
 	my $stmt = qq(INSERT INTO groups (name)
 					SELECT "$groupname"
 					WHERE NOT EXISTS (SELECT * FROM groups WHERE name = "$groupname"));
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
@@ -206,7 +255,10 @@ sub addPrivilege
 	my $stmt = qq(INSERT INTO privileges (name)
 					SELECT "$privilegename"
 					WHERE NOT EXISTS (SELECT * FROM privileges WHERE name = "$privilegename"));
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
@@ -217,7 +269,10 @@ sub addUserToGroup
 	my $stmt = qq(INSERT INTO usergroups (userid, groupid)
 					SELECT users.id, groups.id  FROM users, groups 
 					WHERE users.name = "$username" AND groups.name = "$groupname");
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
@@ -228,7 +283,10 @@ sub addPrivilegeToUser
 	my $stmt = qq(INSERT INTO userprivileges (userid, privilegeid)
 					SELECT users.id, privileges.id  FROM users, privileges
 					WHERE users.name = "$username" AND privileges.name = "$privilegename");
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
@@ -239,15 +297,77 @@ sub addPrivilegeToGroup
 	my $stmt = qq(INSERT INTO groupprivileges (groupid, privilegeid)
 					SELECT groups.id, privileges.id  FROM groups, privileges
 					WHERE groups.name = "$groupname" AND privileges.name = "$privilegename");
+					
+	$dbSemaphore->down();
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
+	
+	return 0;
+}
+
+sub userHasPrivilege
+{
+	my ($username, $privilegename) = @_;
+	my @userprivileges = getUserPrivileges($username);
+	my @groupprivileges = getUserGroupPrivileges($username);
+
+	foreach my $currentprivilege (@userprivileges)
+	{
+		if ($privilegename == $currentprivilege)
+		{return 1;}
+	}
+
+	foreach my $currentprivilege (@groupprivileges)
+	{
+		if ($privilegename == $currentprivilege)
+		{return 1;}
+	}
+
+	return 0;
+}
+
+sub deleteUserFromGroup
+{
+	my ($username, $groupname) = @_;
+	my $stmt = qq(DELETE FROM usergroups
+					WHERE userid = (SELECT id FROM users WHERE name="$username") AND groupid = (SELECT id FROM groups WHERE name="$groupname"));
+					
+	$dbSemaphore->down();
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
+	
+	return 0;
+}
+
+sub deletePrivilegeFromGroup
+{
+	my ($privilegename, $groupname) = @_;
+	my $stmt = qq(DELETE FROM groupprivileges
+					WHERE privilegeid = (SELECT id FROM privileges WHERE name="$privilegename") AND groupid = (SELECT id FROM groups WHERE name="$groupname"));
+					
+	$dbSemaphore->down();
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
+	
+	return 0;
+}
+
+sub deletePrivilegeFromUser
+{
+	my ($privilegename, $username) = @_;
+	my $stmt = qq(DELETE FROM userprivileges
+					WHERE privilegeid = (SELECT id FROM privileges WHERE name="$privilegename") AND userid = (SELECT id FROM users WHERE name="$username"));
+					
+	$dbSemaphore->down();
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	$dbSemaphore->up();
 	
 	return 0;
 }
 
 # test code
-	addPrivilegeToGroup("testprivilege", "testgroup");
-	my @users = listUsers();
-	print "Users:\n".join("\n", @users)."\n";
+	my @users = getUserGroups("casplantje");
+	print "Casplantje's groups:\n".join("\n", @users)."\n";
 
 	my @groups = listGroups();
 	print "Groups:\n".join("\n", @groups)."\n";
