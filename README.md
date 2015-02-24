@@ -13,7 +13,7 @@ Requirements:
   * It's possible to unload plugins
 * There's an internal group management for extending privilege management
   * There are builtin commands for the group management
-  * Only the group "poweruser" is able to manage users and groups
+  * Only the group "superuser" is able to manage users and groups
   * a list of all users with groups(internal and external) can be 
   * the group management works with an SQLite database
 retrieved by plugins

@@ -15,6 +15,9 @@ my $dbSemaphore =  Thread::Semaphore->new();
 
 my $database;
 
+# Superuser group which is granted all rights
+my $superUserGroupName = "superuser";
+
 # This module contains functions to manage user and group privileges
 
 # General error reporting function
@@ -322,6 +325,17 @@ sub userHasPrivilege
 		if ($privilegename == $currentprivilege)
 		{return 1;}
 	}
+	
+	# Hardcoded poweruser check; powerusers have all privileges
+	my @usergroups = getUserGroups($username);
+
+	foreach my $currentgroup (@usergroups)
+	{
+		if ($currentgroup == $superUserGroupName)
+		{return 1;}
+	}
+	
+	
 
 	return 0;
 }

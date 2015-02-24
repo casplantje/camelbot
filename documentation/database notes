@@ -35,7 +35,6 @@ sqlError
 functions to implement:
 
 
-
 Arbitrary query notes:
 
 SELECT DISTINCT privileges.name FROM users
