@@ -1,3 +1,7 @@
+#** @file groupmanager.pm
+# @brief Group management module that makes use of an sqlite database
+#
+#*
 package core::groupmanager;
 
 use List::MoreUtils qw(zip);
@@ -32,6 +36,13 @@ sub sqlError
 $database = DBI->connect("dbi:SQLite:dbname=groupmanagement.db","","")
 	or sqlError $DBI::errstr and return ();
 
+#** @function public getUserGroups ($username)
+# @brief returns an array containing all groups an user is in
+#
+# @param username the username to retrieve the groups from
+#
+# @return an array of all groupnames the user is in 
+#*
 sub getUserGroups
 {
 	my ($username) = @_;
@@ -53,6 +64,9 @@ sub getUserGroups
 	return @result;
 }
 
+#** @function public getUserUserPrivileges ($username)
+# @brief returns an array containing all privileges the user has been assigned to exclusively
+#*
 sub getUserUserPrivileges
 {
 	my ($username) = @_;
@@ -74,6 +88,11 @@ sub getUserUserPrivileges
 	return @result;
 }
 
+#
+# @string getUserGroupPrivileges(string $username)
+# returns an array containing all privileges the user has been assigned to
+# through groups
+#
 sub getUserGroupPrivileges
 {
 	my ($username) = @_;
@@ -97,6 +116,10 @@ sub getUserGroupPrivileges
 	return @result;
 }
 
+#
+# @string getUserPrivileges(string $username)
+# returns an array containing all privileges the user has been assigned to
+#
 sub getUserPrivileges
 {
 	my ($username) = @_;
@@ -105,6 +128,10 @@ sub getUserPrivileges
 	return zip(@userPrivileges, @groupPrivileges);
 }
 
+#
+# @string getGroupPrivileges(string $group.lname)
+# returns an array containing all privileges the user has been assigned to
+#
 sub getGroupPrivileges
 {
 	my ($groupname) = @_;
