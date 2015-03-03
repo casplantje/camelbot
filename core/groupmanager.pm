@@ -7,25 +7,32 @@ package core::groupmanager;
 use List::MoreUtils qw(zip);
 use strict;
 use DBI;
-
-use threads (	'yield',
-				'stack_size' => 64*4096,
-				'exit' => 'threads_only',
-				'stringify');
-				
+use threads ('yield','stack_size' => 64*4096,'exit' => 'threads_only','stringify');		
 use Thread::Semaphore;
 
+#** @var private $dbSemaphore semaphore for database access
+#*
 my $dbSemaphore =  Thread::Semaphore->new();
 
+#** @var private $database DBI handle
+#*
 my $database;
 
-# Superuser group which is granted all rights
+#** @var private $superUserGroupName superuser group which is granted all rights
+#*
 my $superUserGroupName = "superuser";
 
 # This module contains functions to manage user and group privileges
 
-# General error reporting function
-# Camelbot should not die because of a single sql failure
+
+#** @method private sqlError ($errorMessage)
+# @brief General error reporting function
+#
+# Camelbot should not die because of a single sql failure, this 
+# function handles it quietly.
+#
+# @param errorMessage The errormesage thrown by DBI
+#*
 sub sqlError
 {
 	$database->rollback();
@@ -35,11 +42,15 @@ sub sqlError
 
 $database = DBI->connect("dbi:SQLite:dbname=groupmanagement.db","","")
 	or sqlError $DBI::errstr and return ();
+	
+# ----------------------------------------
+# Public Methods
+# ----------------------------------------
 
-#** @function public getUserGroups ($username)
+#** @method public getUserGroups ($username)
 # @brief returns an array containing all groups an user is in
 #
-# @param username the username to retrieve the groups from
+# @param username The username to retrieve the groups from
 #
 # @return an array of all groupnames the user is in 
 #*
@@ -64,8 +75,12 @@ sub getUserGroups
 	return @result;
 }
 
-#** @function public getUserUserPrivileges ($username)
+#** @method public getUserUserPrivileges ($username)
 # @brief returns an array containing all privileges the user has been assigned to exclusively
+#
+# @param username The username to retrieve the privileges from
+#
+# @return an array of all privilege names the user has been assigned directly
 #*
 sub getUserUserPrivileges
 {
@@ -88,11 +103,13 @@ sub getUserUserPrivileges
 	return @result;
 }
 
+#** @method public getUserGroupPrivileges($username)
+# @brief returns an array containing all privileges the user has been assigned to through groups
 #
-# @string getUserGroupPrivileges(string $username)
-# returns an array containing all privileges the user has been assigned to
-# through groups
+# @param username The username to retrieve the privileges from
 #
+# @return an array of all privilege names the user has been assigned through groups
+#*
 sub getUserGroupPrivileges
 {
 	my ($username) = @_;
@@ -116,10 +133,13 @@ sub getUserGroupPrivileges
 	return @result;
 }
 
+#** @method public getUserPrivileges($username)
+# @brief returns an array containing all privileges the user has been assigned to
 #
-# @string getUserPrivileges(string $username)
-# returns an array containing all privileges the user has been assigned to
+# @param username The username to retrieve the privileges from
 #
+# @return an array of all privilege names the user has been assigned to
+#*
 sub getUserPrivileges
 {
 	my ($username) = @_;
@@ -128,10 +148,13 @@ sub getUserPrivileges
 	return zip(@userPrivileges, @groupPrivileges);
 }
 
+#** @method public getGroupPrivileges($groupname)
+# @brief returns an array containing all privileges the group has been assigned to
 #
-# @string getGroupPrivileges(string $group.lname)
-# returns an array containing all privileges the user has been assigned to
+# @param groupname The groupname to retrieve the privileges from
 #
+# @return an array of all privilege names the group has been assigned to
+#*
 sub getGroupPrivileges
 {
 	my ($groupname) = @_;
@@ -153,6 +176,11 @@ sub getGroupPrivileges
 	return @result;
 }
 
+#** @method public listUsers()
+# @brief returns an array containing all users in the database
+#
+# @return an array of all users in the database
+#*
 sub listUsers
 {
 	my $stmt = qq(SELECT name FROM users);
@@ -170,6 +198,11 @@ sub listUsers
 	return @result;	
 }
 
+#** @method public listGroups()
+# @brief returns an array containing all groups in the database
+#
+# @return an array of all groups in the database
+#*
 sub listGroups
 {
 	my $stmt = qq(SELECT name FROM groups);
@@ -186,6 +219,11 @@ sub listGroups
 	return @result;	
 }
 
+#** @method public listPrivileges()
+# @brief returns an array containing all privileges in the database
+#
+# @return an array of all privileges in the database
+#*
 sub listPrivileges
 {
 	my $stmt = qq(SELECT name FROM privileges);
@@ -407,13 +445,12 @@ sub deletePrivilegeFromUser
 }
 
 # test code
-	my @users = getUserGroups("casplantje");
-	print "Casplantje's groups:\n".join("\n", @users)."\n";
-
-	my @groups = listGroups();
-	print "Groups:\n".join("\n", @groups)."\n";
-
-	my @privileges = listPrivileges();
-	print "Privileges:\n".join("\n", @privileges)."\n";
+#	my @users = getUserGroups("casplantje");
+#
+#	my @groups = listGroups();
+#	print "Groups:\n".join("\n", @groups)."\n";
+#
+#	my @privileges = listPrivileges();
+#	print "Privileges:\n".join("\n", @privileges)."\n";
 
 1;
