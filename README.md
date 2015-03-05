@@ -28,6 +28,8 @@ retrieved by plugins
 * Plugins can add new interfaces that can be used by other plugins
 * All settings are saved in xml format
 * Twitch regularly derps out revoking all mod rights and reinstating them a few moments later; camelbot  must handle this strange behaviour properly, preferably without the temporary mod outage
+* The twitch api shall have 2 modes; normal(mod) mode and elevated(channel owner) mode.
+  * There will also be an editor option that can be added to the normal mode
 
 Nice to have:
 * Plugin that generates visitor graphs
