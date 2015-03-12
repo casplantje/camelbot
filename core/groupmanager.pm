@@ -241,6 +241,13 @@ sub listPrivileges
 	return @result;	
 }
 
+#** @method public deleteUser($username)
+# @brief removes the user with name $username from the database
+#
+# @param username The name of the user to remove
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deleteUser
 {
 	my ($username) = @_;
@@ -257,6 +264,13 @@ sub deleteUser
 	return $rv;	
 }
 
+#** @method public deleteGroup($groupname)
+# @brief removes the user with name $groupname from the database
+#
+# @param groupname The name of the group to remove
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deleteGroup
 {
 	my ($groupname) = @_;
@@ -273,6 +287,13 @@ sub deleteGroup
 	return $rv;
 }
 
+#** @method public deletePrivilege($privilegename)
+# @brief removes the privilege with name $privilegename from the database
+#
+# @param privilegename The name of the privilege to remove
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deletePrivilege
 {
 	my ($privilegename) = @_;
@@ -289,6 +310,13 @@ sub deletePrivilege
 	return $rv;	
 }
 
+#** @method public addUser($username)
+# @brief adds the user with name $username to the database
+#
+# @param username The name of the user to add
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addUser
 {
 	my ($username) = @_;
@@ -300,9 +328,16 @@ sub addUser
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
+#** @method public addGroup($groupname)
+# @brief adds the group with name $groupname to the database
+#
+# @param groupname The name of the group to add
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addGroup
 {
 	my ($groupname) = @_;
@@ -317,6 +352,13 @@ sub addGroup
 	return 0;
 }
 
+#** @method public addPrivilege($privilegename)
+# @brief adds the privilege with name $privilegename to the database
+#
+# @param privilegename The name of the privilege to add
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addPrivilege
 {
 	my ($privilegename) = @_;
@@ -331,6 +373,14 @@ sub addPrivilege
 	return 0;
 }
 
+#** @method public addUserToGroup($username, $groupname)
+# @brief adds the user with name $username to group with name $groupname
+#
+# @param username The name of the user to add
+# @param groupname The name of the group to add the user to
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addUserToGroup
 {
 	my ($username, $groupname) = @_;
@@ -342,9 +392,17 @@ sub addUserToGroup
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
+#** @method public addPrivilegeToUser($privilegename, $username)
+# @brief adds the privilege with the name $privilegename to the user with name $username
+#
+# @param privilegename The name of the privilege
+# @param username The name of the user to add the privilege to
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addPrivilegeToUser
 {
 	my ($privilegename, $username) = @_;
@@ -356,9 +414,17 @@ sub addPrivilegeToUser
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
+#** @method public addPrivilegeToGroup($privilegename, $groupname)
+# @brief adds the privilege with the name $privilegename to the group with name $groupname
+#
+# @param privilegename The name of the privilege
+# @param groupname The name of the group to add the privilege to
+#
+# @return number of rows added to the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub addPrivilegeToGroup
 {
 	my ($privilegename, $groupname) = @_;
@@ -373,6 +439,14 @@ sub addPrivilegeToGroup
 	return 0;
 }
 
+#** @method public userHasPrivilege($username, $privilegename)
+# @brief checks whether user with name $username has privilege with name $privilegename
+#
+# @param username The name of the user to check
+# @param privilegename The name of the privilege to check on
+#
+# @return 1 if the user has the privilege or 0 if the user doesn't.
+#*
 sub userHasPrivilege
 {
 	my ($username, $privilegename) = @_;
@@ -405,6 +479,14 @@ sub userHasPrivilege
 	return 0;
 }
 
+#** @method public deleteUserFromGroup($username, $groupname)
+# @brief removes the user with name $username from group with name $groupname
+#
+# @param username The name of the user to remove
+# @param groupname The name of the group to remove the user from
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deleteUserFromGroup
 {
 	my ($username, $groupname) = @_;
@@ -418,6 +500,14 @@ sub deleteUserFromGroup
 	return 0;
 }
 
+#** @method public deletePrivilegeFromGroup($privilegename, $groupname)
+# @brief removes the privilege with name $privilegename from group with name $groupname
+#
+# @param privilegename The name of the privilege to remove
+# @param groupname The name of the group to remove the privilege from
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deletePrivilegeFromGroup
 {
 	my ($privilegename, $groupname) = @_;
@@ -431,6 +521,14 @@ sub deletePrivilegeFromGroup
 	return 0;
 }
 
+#** @method public deletePrivilegeFromUser($privilegename, $username)
+# @brief removes the privilege with name $privilegename from user with name $username
+#
+# @param privilegename The name of the privilege to remove
+# @param username The name of the user to remove the privilege from
+#
+# @return number of rows deleted from the table. This should be either 0 or 1 where 0 means failure and 1 means succes.
+#*
 sub deletePrivilegeFromUser
 {
 	my ($privilegename, $username) = @_;
