@@ -28,6 +28,9 @@ retrieved by plugins
 * Plugins can add new interfaces that can be used by other plugins
 * All settings are saved in xml format
 * Twitch regularly derps out revoking all mod rights and reinstating them a few moments later; camelbot  must handle this strange behaviour properly, preferably without the temporary mod outage
+* The twitch api connection shall have 2 parts
+  * a normal(mod privilege) part
+  * an optional elevated privilege (caster) part(will contain dedicated one-way irc client, simply for sending commands)
 
 Nice to have:
 * Plugin that generates visitor graphs
