@@ -4,7 +4,7 @@ use strict; use warnings;
 use Time::HiRes qw(time usleep nanosleep gettimeofday);
 
 # add include directories
-push ( @INC,"../connection");
+push (@INC, "../connection");
 
 # invoke modules
 use connection::chatconnection;

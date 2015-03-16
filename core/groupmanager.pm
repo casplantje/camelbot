@@ -35,8 +35,13 @@ my $superUserGroupName = "superuser";
 #*
 sub sqlError
 {
-	$database->rollback();
 	my ($errorMessage) = @_;
+	if ($errorMessage =~ /UNIQUE/)
+	{
+		return;
+	}
+	
+	$database->rollback();
 	print "$errorMessage\n";
 }
 
@@ -325,7 +330,7 @@ sub addUser
 					WHERE NOT EXISTS (SELECT * FROM users WHERE name = "$username"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return $rv;
@@ -346,10 +351,10 @@ sub addGroup
 					WHERE NOT EXISTS (SELECT * FROM groups WHERE name = "$groupname"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 #** @method public addPrivilege($privilegename)
@@ -367,10 +372,10 @@ sub addPrivilege
 					WHERE NOT EXISTS (SELECT * FROM privileges WHERE name = "$privilegename"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 #** @method public addUserToGroup($username, $groupname)
@@ -389,7 +394,7 @@ sub addUserToGroup
 					WHERE users.name = "$username" AND groups.name = "$groupname");
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return $rv;
@@ -411,7 +416,7 @@ sub addPrivilegeToUser
 					WHERE users.name = "$username" AND privileges.name = "$privilegename");
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return $rv;
@@ -433,7 +438,7 @@ sub addPrivilegeToGroup
 					WHERE groups.name = "$groupname" AND privileges.name = "$privilegename");
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return 0;
@@ -494,7 +499,7 @@ sub deleteUserFromGroup
 					WHERE userid = (SELECT id FROM users WHERE name="$username") AND groupid = (SELECT id FROM groups WHERE name="$groupname"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return 0;
@@ -515,7 +520,7 @@ sub deletePrivilegeFromGroup
 					WHERE privilegeid = (SELECT id FROM privileges WHERE name="$privilegename") AND groupid = (SELECT id FROM groups WHERE name="$groupname"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return 0;
@@ -536,7 +541,7 @@ sub deletePrivilegeFromUser
 					WHERE privilegeid = (SELECT id FROM privileges WHERE name="$privilegename") AND userid = (SELECT id FROM users WHERE name="$username"));
 					
 	$dbSemaphore->down();
-	my $rv = $database->do($stmt) or sqlError $DBI::errstr and return -1;
+	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
 	return 0;
