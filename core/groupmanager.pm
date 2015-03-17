@@ -441,7 +441,7 @@ sub addPrivilegeToGroup
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 #** @method public userHasPrivilege($username, $privilegename)
@@ -502,7 +502,7 @@ sub deleteUserFromGroup
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 #** @method public deletePrivilegeFromGroup($privilegename, $groupname)
@@ -523,7 +523,7 @@ sub deletePrivilegeFromGroup
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 #** @method public deletePrivilegeFromUser($privilegename, $username)
@@ -544,7 +544,7 @@ sub deletePrivilegeFromUser
 	my $rv = $database->do($stmt) or sqlError $DBI::errstr;
 	$dbSemaphore->up();
 	
-	return 0;
+	return $rv;
 }
 
 # test code

@@ -1,3 +1,6 @@
+#** @file core.pm
+# @brief Core module of the CamelBot framework, it does the bootstrapping and connects all modules
+#*
 package core::core;
 
 use strict; use warnings;
@@ -18,6 +21,11 @@ sub getMicroSecondTime
 	return $microseconds + $seconds * 1000000;
 }
 
+#** @method public new()
+# @brief creates the CamelBot framework
+# This function creates the bot framework and will not return.
+# The function will end in a timed polling loop.
+#*
 sub new
 {
 	core::pluginmanager::loadPluginList;
