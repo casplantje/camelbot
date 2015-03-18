@@ -9,7 +9,7 @@ use lib "$FindBin::Bin/../core";	# use the parent directory
 # The module that will be tested
 use groupmanager;
 
-use Test::Most tests => 7;
+use Test::Most tests => 51;
 
 my $testUserName = "unitTestUser";
 my $testGroupName = "unitTestGroup";
