@@ -68,7 +68,7 @@ my %poll1 = (
 #*
 sub pollAction1
 {
-	print "Polling something...\n";
+	#print "Polling something...\n";
 }
 
 #** @method public loadPlugin ()

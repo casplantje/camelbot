@@ -5,13 +5,13 @@ package core::pluginmanager;
 # subscribe to so the pluginmanager can call them when necessary.
 # Todo: add polling list (with settable time)
 
+use core::builtin;
+
 use strict; use warnings;
 use Module::Load;
 use Symbol 'delete_package';
 use Time::HiRes qw(time);
 use XML::Simple;
-
-  use Data::Dumper;
 
 # add include directories
 push ( @INC,"../plugins");
@@ -108,20 +108,27 @@ sub handleMessageRegex
 {
 	my ($message) = @_;
 		
-	foreach my $regex (@regexes)
+	if (defined($message->{message}))
 	{
-		if (defined($message->{message}))
+		# Handle builtin messages
+		# This function will tell whether other regexes should be parsed
+		if (core::builtin::handleMessageRegex($message))
 		{
-			my $matchMessage = $message->{message};
-			my @regexResults = ( $matchMessage =~ $regex->{regex});
-			
-			if (@regexResults)
+			foreach my $regex (@regexes)
 			{
-				print "Match: $matchMessage\n";
-				if (defined($regex->{handler}))
+
+				my $matchMessage = $message->{message};
+
+				my @regexResults = ( $matchMessage =~ $regex->{regex});
+				
+				if (@regexResults)
 				{
-					print "executing handler\n";
-					$regex->{handler}($message, \@regexResults);
+					print "Match: $matchMessage\n";
+					if (defined($regex->{handler}))
+					{
+						print "executing handler\n";
+						$regex->{handler}($message, \@regexResults);
+					}
 				}
 			}
 		}

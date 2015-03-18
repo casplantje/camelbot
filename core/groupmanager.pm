@@ -10,6 +10,12 @@ use DBI;
 use threads ('yield','stack_size' => 64*4096,'exit' => 'threads_only','stringify');		
 use Thread::Semaphore;
 
+# TODO: Replace thread semaphores with complete dbi clone/fork
+
+#** @var private $tid the id of the database thread
+#*
+my $tid = threads->tid();
+
 #** @var private $dbSemaphore semaphore for database access
 #*
 my $dbSemaphore =  Thread::Semaphore->new();
@@ -345,7 +351,7 @@ sub addUser
 #*
 sub addGroup
 {
-	my ($groupname) = @_;
+	my ($groupname) = @_;	
 	my $stmt = qq(INSERT INTO groups (name)
 					SELECT "$groupname"
 					WHERE NOT EXISTS (SELECT * FROM groups WHERE name = "$groupname"));
