@@ -11,6 +11,16 @@ use threads ('yield','stack_size' => 64*4096,'exit' => 'threads_only','stringify
 use Thread::Semaphore;
 
 # TODO: Replace thread semaphores with complete dbi clone/fork
+#
+# something like this:
+# my @dbconnections;
+# 
+# my $tid = threads->tid();
+# if (undefined($dbconnections[$tid]))
+# {
+# 	$dbconnections[$tid] = $rootdbconnection->clone();
+# }
+# $dbconnections[$tid]->databaseoperation
 
 #** @var private $tid the id of the database thread
 #*
