@@ -3,7 +3,8 @@ package core::pluginmanager;
 # The pluginmanager can load and unload plugins.
 # There are "events", like a regex match, which plugins can
 # subscribe to so the pluginmanager can call them when necessary.
-# Todo: add polling list (with settable time)
+# 
+# TODO: add a queue for all functions that have to be called externally
 
 use core::builtin;
 
@@ -12,6 +13,10 @@ use Module::Load;
 use Symbol 'delete_package';
 use Time::HiRes qw(time);
 use XML::Simple;
+use threads;
+use Thread::Queue;
+use Thread::Semaphore;
+use core::semaphore;
 
 # add include directories
 push ( @INC,"../plugins");
@@ -30,7 +35,9 @@ sub registerPoll
 {
 	my ($poll) = @_;
 	$poll->{lastTrigger} = time;
+	$core::semaphore::coreSemaphore->down();
 	push @polls, $poll;
+	$core::semaphore::coreSemaphore->up();
 }
 
 sub unregisterPoll
@@ -38,6 +45,7 @@ sub unregisterPoll
 	my ($poll) = @_;
 	my $i = 0;
 
+	$core::semaphore::coreSemaphore->down();
 	foreach my $currentPoll (@polls)
 	{
 		if ($currentPoll == $poll)
@@ -46,15 +54,18 @@ sub unregisterPoll
 		}
 		$i++;
 	}	
+	$core::semaphore::coreSemaphore->up();
 }
 
 sub listPolls
 {
 	my @result;
+	$core::semaphore::coreSemaphore->down();
 	foreach my $poll (@polls)
 	{
 		push @result, $poll->{name};
 	}
+	$core::semaphore::coreSemaphore->up();
 	return @result;
 }
 
@@ -62,6 +73,7 @@ sub handlePolls
 {
 	my $currentTime = time;
 	
+	$core::semaphore::coreSemaphore->down();
 	foreach my $poll (@polls)
 	{
 		if (($poll->{lastTrigger} + $poll->{interval}) < $currentTime)
@@ -70,13 +82,17 @@ sub handlePolls
 			$poll->{handler}();
 		}
 	}
+	$core::semaphore::coreSemaphore->up();
 }
 
 # Regex management functions
 sub registerRegex
 {
 	my ($regex) = @_;
+	
+	$core::semaphore::coreSemaphore->down();
 	push @regexes, $regex;
+	$core::semaphore::coreSemaphore->up();
 }
 
 sub unregisterRegex
@@ -84,6 +100,7 @@ sub unregisterRegex
 	my ($regex) = @_;
 	my $i = 0;
 	
+	$core::semaphore::coreSemaphore->down();
 	foreach my $currentRegex (@regexes)
 	{
 		if ($currentRegex == $regex)
@@ -92,16 +109,19 @@ sub unregisterRegex
 		}
 		$i++;
 	}
+	$core::semaphore::coreSemaphore->up();
 }
 
 sub listRegexes
 {
+	$core::semaphore::coreSemaphore->down();
 	foreach my $regex (@regexes)
 	{
 		print $regex->{name} . "\n";
 		# todo: either return it as a string array
 		#		or send the lines as a message
 	}
+	$core::semaphore::coreSemaphore->up();
 }
 
 sub handleMessageRegex
@@ -114,6 +134,7 @@ sub handleMessageRegex
 		# This function will tell whether other regexes should be parsed
 		if (core::builtin::handleMessageRegex($message))
 		{
+			$core::semaphore::coreSemaphore->down();
 			foreach my $regex (@regexes)
 			{
 
@@ -131,6 +152,7 @@ sub handleMessageRegex
 					}
 				}
 			}
+			$core::semaphore::coreSemaphore->up();
 		}
 	}
 }
@@ -149,8 +171,10 @@ sub loadPlugins
 			# Call load function
 			$module->loadPlugin;
 			# add plugin to list
+			$core::semaphore::coreSemaphore->down();
 			push @plugins, $module;
 			push @pluginfiles, $modulepath;
+			$core::semaphore::coreSemaphore->up();
 		}
 	}
 }
@@ -163,12 +187,15 @@ sub unloadPlugins
 		# remove declarations
 		delete_package $module;
 	}
+	
+	$core::semaphore::coreSemaphore->down();
+	
 	foreach my $modulefile (@pluginfiles)
 	{
 		# unload module file
 		delete $INC{$modulefile};
 	}
-	
+
 	# Check and if necessary empty the regex and poll array
 	# This is only to tidy up if plugins don't unregister
 	# their regexes properly
@@ -183,20 +210,26 @@ sub unloadPlugins
 		print "Warning! poll " . $poll->{name} . " wasn't unloaded properly. Check the unloadPlugin of its module!\n";
 	}
 	@polls = ();
+
+	$core::semaphore::coreSemaphore->up();
 }
 
 # Load the plugins xml into hash reference $pluginsXML
 sub loadPluginList
 {
+	$core::semaphore::coreSemaphore->down();
 	$pluginsXML = $xs->XMLin("plugins.xml");
+	$core::semaphore::coreSemaphore->up();
 }
 
 # Write hash reference $pluginsXML back to the xml file
 sub savePluginList
 {
+	$core::semaphore::coreSemaphore->down();
 	open(my $fh, '>', 'plugins.xml');
 	print $fh $xs->XMLout($pluginsXML);
 	close $fh;
+	$core::semaphore::coreSemaphore->up();
 }
 
 print "loaded plugin manager module!\n";

@@ -7,6 +7,7 @@ use IO::Socket::SSL;
 use IO::Select;
 use connection::credentials;
 use core::pluginmanager;
+use core::semaphore;
 
 use threads (	'yield',
 				'stack_size' => 64*4096,
@@ -268,7 +269,7 @@ sub sendText
 	$sockSemaphore->down();
 	print $debug "Socket rights acquired\n";
 	# will send a message to irc
-		print "PRIVMSG " . $target . " :$text";
+		print "PRIVMSG " . $target . " :$text\n";
 	print $sock "PRIVMSG " . $target . " :$text\r\n";
 	$sockSemaphore->up();
 }

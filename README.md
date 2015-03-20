@@ -36,3 +36,41 @@ Nice to have:
 * Plugin that generates visitor graphs
 * A SOAP API so external interface applications can connect to it
 * A russian roulette(with bans/timeouts) plugin
+
+
+===========
+= Roadmap =
+===========
+
+The plans are roughly this; no dates, it is done when it is done.
+
+* ver 0.1(alpha)
+All components are connected and roughly tested
+
+* ver 0.2(beta)
+Complete Doxygen comment coverage and unit test coverage on all critical modules.
+There's a doxygen release available 
+This version will be ready for advanced end users to run.
+
+* ver 0.3-0.9(release candidates)
+Bug fixing and adding new plugins.
+
+* ver 1.0(release)
+The bot framework meets all requirements except for GUI and SOAP.
+A Windows installer is released with activeperl built in.
+
+* ver 1.1(alpha)
+A SOAP interface has been implemented and a basic C# GUI application has been designed.
+
+* ver 1.2(beta)
+N-unit testcases have been added to the C# application for testing the SOAP interface.
+This version will be ready for advanced end users to run.
+
+* ver 1.3-1.9(release candidates)
+Bug fixing and refining the C# GUI application, completing the functionality.
+All command-line functionality must be available in the GUI as well.
+
+* ver 2.0(release)
+The bot framework meets all requirements.
+A windows installer is released with activeperl built in.
+A "golden" build of Doxygen is available

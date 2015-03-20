@@ -13,6 +13,7 @@ push (@INC, "../connection");
 use connection::chatconnection;
 use core::pluginmanager;
 use core::groupmanager;
+use core::semaphore;
 
 # TODO: move to separate module
 sub getMicroSecondTime

@@ -8,15 +8,10 @@ use List::MoreUtils qw(zip);
 use strict;
 use DBI;
 use threads ('yield','stack_size' => 64*4096,'exit' => 'threads_only','stringify');		
-use Thread::Semaphore;
 
 #** @var private $tid the id of the database thread
 #*
 my $tid = threads->tid();
-
-#** @var private $dbSemaphore semaphore for database access
-#*
-my $dbSemaphore =  Thread::Semaphore->new();
 
 #** @var private $dbh Root DBI handle
 #*
@@ -40,7 +35,7 @@ sub getDatabaseHandler
 	if (!defined($dbHandlers[$tid]))
 	{
 		$dbHandlers[$tid] = DBI->connect("dbi:SQLite:dbname=groupmanagement.db","","")
-							or sqlError $DBI::errstr and return ();
+							or sqlError $DBI::errstr;
 	}
 	return $dbHandlers[$tid];
 }
@@ -295,11 +290,7 @@ sub deleteUser
 	my ($username) = @_;
 	my $stmt = qq(DELETE FROM users WHERE name="$username");
 	
-	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr and return ();
-	
-	if( $rv < 0 ){
-	   print $DBI::errstr;
-	}
+	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr;
 	
 	return $rv;	
 }
@@ -316,11 +307,7 @@ sub deleteGroup
 	my ($groupname) = @_;
 	my $stmt = qq(DELETE FROM groups WHERE name="$groupname");
 	
-	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr and return ();
-	
-	if( $rv < 0 ){
-	   print $DBI::errstr;
-	}
+	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr;
 	
 	return $rv;
 }
@@ -335,13 +322,9 @@ sub deleteGroup
 sub deletePrivilege
 {
 	my ($privilegename) = @_;
-	my $stmt = qq(DELETE FROM users WHERE name="$privilegename");
+	my $stmt = qq(DELETE FROM privileges WHERE name="$privilegename");
 	
-	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr and return ();
-	
-	if( $rv < 0 ){
-	   print $DBI::errstr;
-	}
+	my $rv = getDatabaseHandler()->do($stmt) or sqlError $DBI::errstr;
 	
 	return $rv;	
 }
