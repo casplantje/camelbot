@@ -5,6 +5,11 @@ Perl based modular twitch/irc bot
 
 The idea for this project is to make a lightweight chatbot, initially focused on twitch chat, where all plugins defining the behaviour(so not the plugin for the chat connection) are dynamically (re)loadable.
 
+Notes on multithreading:
+There are 2 semaphores at the moment one for the chat connection and one general semaphore; when one of the semaphores is locked no function may be called that locks the other one.
+This means in practice calling these functions should be done to prepare data or to process prepared data.
+
+
 Requirements:
 * The core can accept different connection modules, but only one at a time.
   * This connection module does not need to be reloadable

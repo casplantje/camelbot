@@ -17,6 +17,7 @@ use threads;
 use Thread::Queue;
 use Thread::Semaphore;
 use core::semaphore;
+use Switch;
 
 # add include directories
 push ( @INC,"../plugins");
@@ -29,6 +30,8 @@ my @polls;
 
 my $xs = new XML::Simple(keeproot => 1,searchpath => "."); #, forcearray => 1);
 my $pluginsXML;
+
+our $commandQueue = Thread::Queue->new();
 
 # Polling management functions
 sub registerPoll
@@ -230,6 +233,29 @@ sub savePluginList
 	print $fh $xs->XMLout($pluginsXML);
 	close $fh;
 	$core::semaphore::coreSemaphore->up();
+}
+
+#** @method private handleQueue() handles a command queue for handling 
+# @brief Clears up the queue, handling all commands in order
+#
+#*
+sub handleQueue
+{
+	while (my $command = $commandQueue->dequeue())
+	{
+		switch ($command)
+		{
+			case "unloadPlugins" {
+				unloadPlugins();
+			}
+			case "loadPlugins" {
+				loadPlugins();
+			}
+			case "loadPluginList" {
+				loadPluginList();
+			}
+		}
+	}
 }
 
 print "loaded plugin manager module!\n";

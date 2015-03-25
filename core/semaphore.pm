@@ -4,7 +4,6 @@
 #*
 package core::semaphore;
 
-# TODO: test and review the semaphore structure to see whether deadlocks are possible
 
 use Thread::Semaphore;
 

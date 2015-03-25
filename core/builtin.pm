@@ -359,9 +359,9 @@ sub handleMessageRegex
 			{	
 				case "reload"
 				{
-						core::pluginmanager::unloadPlugins();
-						core::pluginmanager::loadPluginList();
-						core::pluginmanager::loadPlugins();
+					$core::pluginmanager::commandQueue->enqueue("unloadPlugin");
+					$core::pluginmanager::commandQueue->enqueue("loadPluginList");
+					$core::pluginmanager::commandQueue->enqueue("loadPlugins");
 				}
 			}
 		}

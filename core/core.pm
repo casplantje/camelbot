@@ -48,7 +48,8 @@ sub new
 	while (1)
 	{
 		my $starttime = getMicroSecondTime();
-		core::pluginmanager::handlePolls;
+		core::pluginmanager::handlePolls();
+		core::pluginmanager::handleQueue();
 		my $sleeptime = ($loopTimeOut - (getMicroSecondTime() - $starttime));
 		if ($sleeptime < 0)
 		{

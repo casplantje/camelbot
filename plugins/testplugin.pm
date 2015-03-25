@@ -10,7 +10,7 @@ use connection::chatconnection;
 #*
 my %regex1 = (
 	name => "RegexHandler1",
-	regex => ".*[bB]otface.*",
+	regex => "![bB]otface.*",
 	handler => \&regexAction1
 );
 
