@@ -1,6 +1,5 @@
 package plugins::testplugin;
 
-use Data::Dumper;
 use core::pluginmanager;
 use strict; use warnings;
 use connection::chatconnection;
