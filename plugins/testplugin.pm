@@ -10,7 +10,8 @@ use connection::chatconnection;
 my %regex1 = (
 	name => "RegexHandler1",
 	regex => "![bB]otface.*",
-	handler => \&regexAction1
+	handler => \&regexAction1,
+	cooldown => 10
 );
 
 #** @method public regexAction1 (%message, @regexMatches)

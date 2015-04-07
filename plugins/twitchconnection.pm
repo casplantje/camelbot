@@ -22,8 +22,8 @@ sub getToken
 
 sub apiQuery
 {
-	#$curl->setopt(CURLOPT_HEADER,1);
-	$curl->setopt(CURLOPT_URL, 'https://api.twitch.tv/kraken/channels/garyfaceman');	
+	my ($query) = @_;
+	$curl->setopt(CURLOPT_URL, 'https://api.twitch.tv/kraken/'.$query);	
 	
 	my @headers=();
 	$headers[0] = "Authorization: OAuth " . getToken();
@@ -66,7 +66,7 @@ sub unloadPlugin
 
 }
 
-print Dumper(apiQuery());
+print Dumper(apiQuery("channels/garyfaceman"));
 print "Loaded twitch API connection plugin!\n";
 
 

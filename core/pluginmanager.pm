@@ -127,6 +127,36 @@ sub listRegexes
 	$core::semaphore::coreSemaphore->up();
 }
 
+# Checks whether regex may trigger and sets last time triggered
+sub checkRegexCooldown
+{
+	my ($regex) = @_;
+	my $currentTime = time;
+	
+	if (defined $regex->{cooldown})
+	{
+		if (defined $regex->{lastTrigger})
+		{
+			if ($regex->{lastTrigger} + $regex->{cooldown} > $currentTime)
+			{
+				# Checked too early
+				return 0;
+			} else {
+				# Enough time has passed
+				$regex->{lastTrigger} = $currentTime;
+				return 1;
+			}
+		} else {
+			# Set last Trigger
+			$regex->{lastTrigger} = $currentTime;
+			return 1;
+		}
+	} else
+	{
+		return 1;
+	}
+}
+
 sub handleMessageRegex
 {
 	my ($message) = @_;
@@ -140,18 +170,23 @@ sub handleMessageRegex
 			$core::semaphore::coreSemaphore->down();
 			foreach my $regex (@regexes)
 			{
-
 				my $matchMessage = $message->{message};
 
 				my @regexResults = ( $matchMessage =~ $regex->{regex});
 				
 				if (@regexResults)
 				{
-					print "Match: $matchMessage\n";
-					if (defined($regex->{handler}))
+					if (checkRegexCooldown($regex))
 					{
-						print "executing handler\n";
-						$regex->{handler}($message, \@regexResults);
+						print "Match: $matchMessage\n";
+						if (defined($regex->{handler}))
+						{
+							print "executing handler\n";
+							# Temporarily free the semaphore so the plugin can work freely
+							$core::semaphore::coreSemaphore->up();
+							$regex->{handler}($message, \@regexResults);
+							$core::semaphore::coreSemaphore->down();
+						}
 					}
 				}
 			}
