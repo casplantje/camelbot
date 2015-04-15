@@ -38,6 +38,7 @@ retrieved by plugins
   * an optional elevated privilege (caster) part(will contain dedicated one-way irc client, simply for sending commands)
 
 Nice to have:
+* Plugin that keeps track of all timeouts being done
 * Plugin that generates visitor graphs
 * A SOAP API so external interface applications can connect to it
 * A russian roulette(with bans/timeouts) plugin
