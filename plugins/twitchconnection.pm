@@ -5,10 +5,61 @@ use strict; use warnings;
 use WWW::Curl::Easy;
 use connection::credentials;
 use JSON;
+use Time::HiRes qw(time);
 
 use Data::Dumper;
 
 my $curl = WWW::Curl::Easy->new;
+
+#TODO: add threaded mechanism that retrieves polls
+# The polls can be added to a list and will be retrieved on interval and stored in a hash array.
+# The retrieved information can then be requested from the hash array for immediate access.
+
+my @polls;
+
+#** @method private pollThread()
+# @brief executes polling operations, contains own curl handler
+#*
+sub pollThread
+{
+	
+}
+
+#** @method public registerPoll($poll)
+# @brief adds poll to the list
+#
+# @param poll hash containing all settings for the poll
+#*
+sub registerPoll
+{
+	my ($poll) = @_;
+	$poll->{lastTrigger} = time;
+	$core::semaphore::coreSemaphore->down();
+	push @polls, $poll;
+	$core::semaphore::coreSemaphore->up();
+}
+
+#** @method public unregisterPoll($poll)
+# @brief removes poll from the list
+#
+# @param poll string identifier of the poll
+#*
+sub unregisterPoll
+{
+	
+}
+
+#** @method getPollData($poll)
+# @brief returns the information belonging to $poll
+#
+# @param poll string identifier of the poll
+#
+# @return hash with the poll information as returned by curl
+#*
+sub getPollData
+{
+	
+}
 
 #** @method private getToken ()
 # @brief retrieves the twitch API token from the irc credentials

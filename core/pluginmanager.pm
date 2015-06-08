@@ -3,8 +3,6 @@ package core::pluginmanager;
 # The pluginmanager can load and unload plugins.
 # There are "events", like a regex match, which plugins can
 # subscribe to so the pluginmanager can call them when necessary.
-# 
-# TODO: add a queue for all functions that have to be called externally
 
 use core::builtin;
 
@@ -117,14 +115,14 @@ sub unregisterRegex
 
 sub listRegexes
 {
+	my @result;
 	$core::semaphore::coreSemaphore->down();
 	foreach my $regex (@regexes)
 	{
-		print $regex->{name} . "\n";
-		# todo: either return it as a string array
-		#		or send the lines as a message
+		push @result, $regex->{name};
 	}
 	$core::semaphore::coreSemaphore->up();
+	return @result;
 }
 
 # Checks whether regex may trigger and sets last time triggered
@@ -270,7 +268,7 @@ sub savePluginList
 	$core::semaphore::coreSemaphore->up();
 }
 
-#** @method private handleQueue() handles a command queue for handling 
+#** @method private handleQueue()
 # @brief Clears up the queue, handling all commands in order
 #
 #*

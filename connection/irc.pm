@@ -7,7 +7,6 @@ use IO::Socket::SSL;
 use IO::Select;
 use connection::credentials;
 use core::pluginmanager;
-use core::semaphore;
 
 use threads (	'yield',
 				'stack_size' => 64*4096,
@@ -15,6 +14,8 @@ use threads (	'yield',
 				'stringify');
 				
 use Thread::Semaphore;
+use core::semaphore;
+use Thread::Queue;
 use Time::HiRes qw(usleep nanosleep);
 
 my $loopTimeOut = 50000; # Todo: find a proper loop timeout that fits irc response times
@@ -31,8 +32,10 @@ open (my $debug, ">", "/dev/null")
 # in order to safely send messages through the socket.
 my $sock;
 my $receiveThread;
+my $sendThread;
 my $sockSemaphore =  Thread::Semaphore->new();
 my $sockSelect;
+my $messageQueue = Thread::Queue->new(); 
                                     
 print "loaded irc module!\n";
 
@@ -92,6 +95,50 @@ sub connect
 	# Create thread; from here on the socket is accessed from multiple
 	# threads
 	$receiveThread = threads->create(\&readText);
+	$sendThread = threads->create(\&writeCommands);
+}
+
+my $messageLimit = 5;
+	
+sub nextMessagePointer
+{
+	my ($pointer) = @_;
+	
+	if ($pointer < $messageLimit)
+	{
+		return $pointer + 1;
+	} else
+	{
+		return 0;
+	}
+}
+sub writeCommands
+{
+
+	my $timingPeriod = 30; # seconds
+	my $messageListPointer = 0;
+	my @messages;
+	
+	for (my $i = 0; $i < $messageLimit; $i++)
+	{
+		$messages[$i] = 0;
+	}
+	
+	
+	while(1)
+	{
+		while (($messages[nextMessagePointer($messageListPointer)] < (time() - $timingPeriod)) && (defined(my $text = $messageQueue->dequeue_nb())))
+		{
+			$messages[$messageListPointer] = time();
+			$messageListPointer = nextMessagePointer($messageListPointer);
+			print "Sending: $text\r\n";
+			
+			$sockSemaphore->down();
+			print $sock "$text\r\n";
+			$sockSemaphore->up();
+		}	
+		usleep($loopTimeOut);
+	}
 }
 
 sub readText
@@ -160,6 +207,10 @@ sub readText
 	
 	# Connection lost; close connection and call connect function again.
 	print "Connection lost, trying to reconnect...\n";
+	#cleanly kill the sending thread
+	$sockSemaphore->down();
+	$sendThread->kill();
+	$sockSemaphore->up();
 	if ($sock)
 	{
 		close ($sock);
@@ -266,24 +317,15 @@ sub sendText
 	}
 	
 	print $debug "Going to send...\n";
-	$sockSemaphore->down();
-	print $debug "Socket rights acquired\n";
-	# will send a message to irc
-		print "PRIVMSG " . $target . " :$text\n";
-	print $sock "PRIVMSG " . $target . " :$text\r\n";
-	$sockSemaphore->up();
+	print "PRIVMSG " . $target . " :$text\n";
+	sendCommand("PRIVMSG $target :$text");
 }
 
 sub sendCommand
 {
 	my ($text) = @_;
 	print $debug "Going to send...\n";
-	$sockSemaphore->down();
-	print $debug "Socket rights acquired\n";
-	# will send a message to irc
-		print "$text";
-	print $sock "$text\r\n";
-	$sockSemaphore->up();	
+	$messageQueue->enqueue($text);
 }
 
 1;
