@@ -14,13 +14,14 @@ use threads (	'yield',
 				'stringify');
 				
 use Thread::Semaphore;
-use core::semaphore;
 use Thread::Queue;
 use Time::HiRes qw(usleep nanosleep);
 
 my $loopTimeOut = 50000; # Todo: find a proper loop timeout that fits irc response times
 my $timeOutSeconds = 120;
 my $timeOutThreshold = 0.05;	# Threshold where to start pinging
+
+my $messageLimit;
 
 # my $debug = *STDOUT;
 open (my $debug, ">", "/dev/null")
@@ -98,8 +99,6 @@ sub connect
 	$sendThread = threads->create(\&writeCommands);
 }
 
-my $messageLimit = 5;
-	
 sub nextMessagePointer
 {
 	my ($pointer) = @_;
@@ -112,11 +111,12 @@ sub nextMessagePointer
 		return 0;
 	}
 }
+
 sub writeCommands
 {
-
-	my $timingPeriod = 30; # seconds
+	my $timingPeriod = connection::credentials::ircSetting("messagelimitperiod");
 	my $messageListPointer = 0;
+	$messageLimit = connection::credentials::ircSetting("messagelimit");
 	my @messages;
 	
 	for (my $i = 0; $i < $messageLimit; $i++)
@@ -131,7 +131,6 @@ sub writeCommands
 		{
 			$messages[$messageListPointer] = time();
 			$messageListPointer = nextMessagePointer($messageListPointer);
-			print "Sending: $text\r\n";
 			
 			$sockSemaphore->down();
 			print $sock "$text\r\n";
@@ -316,15 +315,12 @@ sub sendText
 		else { last; }
 	}
 	
-	print $debug "Going to send...\n";
-	print "PRIVMSG " . $target . " :$text\n";
 	sendCommand("PRIVMSG $target :$text");
 }
 
 sub sendCommand
 {
 	my ($text) = @_;
-	print $debug "Going to send...\n";
 	$messageQueue->enqueue($text);
 }
 

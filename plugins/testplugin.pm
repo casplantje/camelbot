@@ -53,6 +53,37 @@ sub regexAction2
 	connection::chatconnection::sendMessage("Enjoy your complementary salt, " . $name . " PJSalt");
 }
 
+#** @var private %regex2 Regex handler 2
+# @brief Simple hashlist containing the information for handling a regex event.
+#*
+my %regexPyramid = (
+	name => "RegexPyramidHandler",
+	regex => "!pyramid\ (.*)",
+	handler => \&regexPyramidAction,
+	cooldown => 60
+);
+
+
+#** @method public regexPyramid (%message, @regexMatches)
+# @brief Pyramid function
+#
+# @param message A message hashlist as defined in irc.pm
+# @param regexMatches an array of all regex matches
+#*
+sub regexPyramidAction
+{
+	my $message = shift;
+	my $regexMatches = shift;
+	my $element = $$regexMatches[0];
+	$element =~ s/^\s+|\s+$//g; # Regex matches can contain rather strange whitespaces. Don't know why
+	
+	connection::chatconnection::sendMessage("$element");
+	connection::chatconnection::sendMessage("$element $element");
+	connection::chatconnection::sendMessage("$element $element $element");
+	connection::chatconnection::sendMessage("$element $element");
+	connection::chatconnection::sendMessage("$element");
+}
+
 #** @var private %poll1 Poll handler 1
 # @brief Simple hashlist containing the information for handling a poll event.
 # interval = 1 second
@@ -78,6 +109,7 @@ sub loadPlugin
 {
 	core::pluginmanager::registerRegex(\%regex1);
 	core::pluginmanager::registerRegex(\%regex2);
+	core::pluginmanager::registerRegex(\%regexPyramid);
 	core::pluginmanager::registerPoll(\%poll1);
 	print "Loaded testplugin!\n";
 }
@@ -89,6 +121,7 @@ sub unloadPlugin
 {
 	core::pluginmanager::unregisterRegex(\%regex1);
 	core::pluginmanager::unregisterRegex(\%regex2);
+	core::pluginmanager::unregisterRegex(\%regexPyramid);
 	core::pluginmanager::unregisterPoll(\%poll1);
 	print "Unloaded testplugin!\n";
 }
